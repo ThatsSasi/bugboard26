@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- ENUMERATORS ---
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum IssueType {
+  QUESTION
+  BUG
+  DOCUMENTATION
+  FEATURE
+}
+
+enum IssueStatus {
+  TODO
+  IN_PROGRESS
+  RESOLVED
+  ARCHIVED
+}
+
+// --- MODELS ---
+
+model User {
+  id             Int          @id @default(autoincrement())
+  email          String       @unique
+  password       String
+  role           Role         @default(MEMBER)
+  createdAt      DateTime     @default(now())
+  
+  // Relazioni
+  reportedIssues Issue[]      @relation("ReportedIssues")
+  assignedIssues Issue[]      @relation("AssignedIssues")
+  historyLogs    HistoryLog[]
+}
+
+model Issue {
+  id          Int            @id @default(autoincrement())
+  title       String
+  description String
+  priority    IssuePriority?
+  type        IssueType
+  status      IssueStatus    @default(TODO)
+  imageUrl    String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  // Relazioni
+  reporterId  Int
+  reporter    User           @relation("ReportedIssues", fields: [reporterId], references: [id])
+  
+  assigneeId  Int?
+  assignee    User?          @relation("AssignedIssues", fields: [assigneeId], references: [id])
+  
+  tags        Tag[]
+  historyLogs HistoryLog[]
+}
+
+model Tag {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  issues Issue[]
+}
+
+model HistoryLog {
+  id         Int      @id @default(autoincrement())
+  action     String
+  oldValue   String?
+  newValue   String?
+  modifiedAt DateTime @default(now())
+  
+  // Relazioni
+  issueId    Int
+  issue      Issue    @relation(fields: [issueId], references: [id])
+  
+  modifierId Int
+  modifier   User     @relation(fields: [modifierId], references: [id])
+}
