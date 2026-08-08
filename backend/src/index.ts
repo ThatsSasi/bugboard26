@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { setupSwagger } from './config/swagger';
 
 // --- IMPORT DEI ROUTER ---
 import userRoutes from './routes/userRoutes';
@@ -23,6 +24,9 @@ app.get('/api/health', (req: Request, res: Response) => {
 // Tutte le rotte definite in userRoutes avranno il prefisso /api/users
 app.use('/api/users', userRoutes);
 app.use('/api/issues', issueRoutes);
+
+// --- CONFIGURAZIONE DI SWAGGER ---
+setupSwagger(app);
 
 app.listen(port, () => {
   console.log(`🚀 Server avviato con successo su http://localhost:${port}`);
