@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { UserController } from '../controllers/userController';
 import { validate } from '../middlewares/validateMiddleware';
 import { registerSchema, loginSchema } from '../schemas/userSchema';
+import { prisma } from '..';
 
 const router = Router();
 const userController = new UserController();
@@ -40,5 +41,22 @@ router.post('/register', validate(registerSchema), (req, res) => userController.
  *         description: Credenziali non valide
  */
 router.post('/login', validate(loginSchema), (req, res) => userController.login(req, res));
+// Esempio nel tuo router Express (es. routes/userRoutes.ts)
+router.get('/', async (req, res) => {
+  try {
+    // Recuperiamo tutti gli utenti dal database con Prisma
+    // (potresti voler escludere le password per sicurezza!)
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true
+      }
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Errore nel recupero degli utenti" });
+  }
+});
 
 export default router;

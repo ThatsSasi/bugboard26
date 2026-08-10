@@ -46,6 +46,7 @@ model User {
   reportedIssues Issue[]      @relation("ReportedIssues")
   assignedIssues Issue[]      @relation("AssignedIssues")
   historyLogs    HistoryLog[]
+  notifications  Notification[]
 }
 
 model Issue {
@@ -89,4 +90,15 @@ model HistoryLog {
   
   modifierId Int
   modifier   User     @relation(fields: [modifierId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  // Relazione con l'utente che riceve la notifica
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

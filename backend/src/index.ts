@@ -9,6 +9,8 @@ import { setupSwagger } from './config/swagger';
 // --- IMPORT DEI ROUTER ---
 import userRoutes from './routes/userRoutes';
 import issueRoutes from './routes/issueRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import reportRoutes from './routes/reportRoutes';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -28,6 +30,8 @@ app.get('/api/health', (req: Request, res: Response) => {
 // Tutte le rotte definite in userRoutes avranno il prefisso /api/users
 app.use('/api/users', userRoutes);
 app.use('/api/issues', issueRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/reports', reportRoutes);
 
 // --- CONFIGURAZIONE DI SWAGGER ---
 setupSwagger(app);

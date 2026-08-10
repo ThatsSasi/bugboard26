@@ -233,36 +233,33 @@ export class IssueService {
   }
 
   async addTag(issueId: number, tagName: string) {
-    // Normalizziamo il testo (tutto minuscolo e senza spazi extra all'inizio/fine) 
-    // per evitare di creare tag duplicati come "UI " e "ui"
-    const normalizedTag = tagName.trim().toLowerCase();
-
-    return await prisma.issue.update({
-      where: { id: issueId },
-      data: {
-        tags: {
-          connectOrCreate: {
-            where: { name: normalizedTag },
-            create: { name: normalizedTag }
-          }
-        }
-      },
-      // Chiediamo a Prisma di restituirci l'issue con i tag aggiornati
-      include: { tags: true } 
-    });
-  }
+        // Normalizziamo il tag: tutto minuscolo e senza spazi extra
+        const name = tagName.toLowerCase().trim();
+        
+        return await prisma.issue.update({
+            where: { id: issueId },
+            data: {
+                tags: {
+                    connectOrCreate: {
+                        where: { name: name },
+                        create: { name: name }
+                    }
+                }
+            },
+            // Assicurati che le tue query restituiscano sempre anche assignee e tags!
+            include: { assignee: true, tags: true } 
+        });
+    }
 
   async removeTag(issueId: number, tagId: number) {
-    return await prisma.issue.update({
-      where: { id: issueId },
-      data: {
-        tags: {
-          // 'disconnect' rompe il legame logico, ma NON cancella il Tag dal database,
-          // in modo che rimanga disponibile per altre segnalazioni.
-          disconnect: { id: tagId } 
-        }
-      },
-      include: { tags: true }
-    });
-  }
+        return await prisma.issue.update({
+            where: { id: issueId },
+            data: {
+                tags: {
+                    disconnect: { id: tagId } // Rimuove il legame, non elimina il tag dal DB
+                }
+            },
+            include: { assignee: true, tags: true }
+        });
+    }
 }
