@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
+import cors from 'cors';
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { setupSwagger } from './config/swagger';
@@ -11,7 +13,9 @@ import issueRoutes from './routes/issueRoutes';
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 export const prisma = new PrismaClient({ adapter });

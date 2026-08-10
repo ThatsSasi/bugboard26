@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { IssueService, IssueCreateDTO } from '../services/issueService';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { IssueStatus } from '@prisma/client';
+import { prisma } from '..';
 
 const issueService = new IssueService();
 
@@ -10,7 +11,7 @@ export class IssueController {
     async create(req: AuthRequest, res: Response): Promise<void> {
         try {
         // 1. Estrazione dei dati dal payload HTTP (il body)
-        const { title, description, type } = req.body as IssueCreateDTO;
+        const { title, description, type, priority, imageUrl } = req.body as IssueCreateDTO;
 
         // 2. Recupero dell'ID utente iniettato dal nostro Middleware!
         // Usiamo req.user?.userId perché TypeScript sa che potrebbe essere undefined 
@@ -24,26 +25,25 @@ export class IssueController {
 
         // 3. Validazione sintattica di base
         if (!title || !description || !type) {
-            res.status(400).json({ error: 'Titolo, descrizione e tipo (BUG o FEATURE) sono campi obbligatori.' });
+            res.status(400).json({ error: 'Titolo, descrizione e tipo sono obbligatori.' });
             return;
         }
 
-        // 4. Delega alla Logica di Business
-        const newIssue = await issueService.create(
-            { title, description, type }, 
-            reporterId
-        );
+        // 4. Delega alla Logica di Business (Come un vero Software Engineer!)
+        const newIssue = await issueService.create({
+            title,
+            description,
+            type,
+            priority,
+            imageUrl
+        }, reporterId);
 
         // 5. Risposta al Client (201 = Created)
-        res.status(201).json({
-            message: 'Segnalazione creata con successo!',
-            issue: newIssue
-        });
-        
-        } catch (error: any) {
-        res.status(500).json({ error: error.message || 'Errore interno del server.' });
+        res.status(201).json(newIssue);
+            } catch (error) {
+            res.status(500).json({ error: 'Errore interno del server' });
         }
-    }
+    };
 
     async getAll(req: AuthRequest, res: Response): Promise<void> {
         try {

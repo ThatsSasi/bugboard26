@@ -1,10 +1,12 @@
-import { IssueType, IssueStatus } from '@prisma/client';
+import { IssueType, IssueStatus, IssuePriority } from '@prisma/client';
 import { prisma } from '../index';
 
 export interface IssueCreateDTO {
   title: string;
   description: string;
   type: IssueType; 
+  priority?: IssuePriority;
+  imageUrl?: string;
 }
 
 export interface IssueFilters {
@@ -21,6 +23,8 @@ export class IssueService {
         title: data.title,
         description: data.description,
         type: data.type,
+        priority: data.priority, // <-- Aggiunto al salvataggio
+        imageUrl: data.imageUrl,
         status: IssueStatus.TODO, // <-- Eccolo qui, perfettamente allineato allo schema!
         reporter: {
           connect: { id: reporterId } 

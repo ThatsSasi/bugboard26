@@ -1,18 +1,22 @@
 import { z } from 'zod';
-import { IssueType } from '@prisma/client';
 
-// Definiamo lo schema per la creazione di un bug
 export const createIssueSchema = z.object({
   body: z.object({
-    title: z.string({ message: 'Il titolo è obbligatorio o non valido.' })
-      .min(3, 'Il titolo deve contenere almeno 3 caratteri.')
-      .max(100, 'Il titolo è troppo lungo.'),
-      
-    description: z.string({ message: 'La descrizione è obbligatoria o non valida.' })
-      .min(10, 'La descrizione deve contenere almeno 10 caratteri.'),
-      
-    // Rimuoviamo il secondo parametro per evitare il warning di deprecazione.
-    // In caso di errore, Zod dirà in automatico: "Expected 'BUG' | 'FEATURE' | ..."
-    type: z.nativeEnum(IssueType)
+    title: z.string().min(1, 'Il titolo è obbligatorio'),
+    description: z.string().min(1, 'La descrizione è obbligatoria'),
+    type: z.enum(['QUESTION', 'BUG', 'DOCUMENTATION', 'FEATURE']),
+    // Zod .optional() corrisponde al punto interrogativo (?) di Prisma
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
+    imageUrl: z.string().url('Deve essere un URL valido').optional()
+  })
+});
+
+export const updateStatusSchema = z.object({
+  body: z.object({
+    // Corretto da DONE a RESOLVED
+    status: z.enum(['TODO', 'IN_PROGRESS', 'RESOLVED', 'ARCHIVED'])
+  }),
+  params: z.object({
+    id: z.string().regex(/^\d+$/, 'L\'ID deve essere un numero')
   })
 });
