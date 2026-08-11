@@ -3,13 +3,21 @@ import { UserController } from '../controllers/userController';
 import { validate } from '../middlewares/validateMiddleware';
 import { registerSchema, loginSchema } from '../schemas/userSchema';
 import { prisma } from '..';
+import { upload } from '../middlewares/uploadMiddleware';
+import { authenticateToken, isAdmin } from '../middlewares/authMiddleware';
 
 const router = Router();
 const userController = new UserController();
 
 // Definiamo l'endpoint per la registrazione.
 // Usiamo un'arrow function per mantenere il corretto contesto di "this" all'interno della classe Controller.
-router.post('/register', validate(registerSchema), (req, res) => userController.register(req, res));
+router.post(
+  '/register', 
+  authenticateToken, 
+  isAdmin, 
+  validate(registerSchema), 
+  (req, res) => userController.register(req, res)
+);
 // Definiamo l'endpoint per il login
 /**
  * @swagger
@@ -50,7 +58,9 @@ router.get('/', async (req, res) => {
       select: {
         id: true,
         email: true,
-        role: true
+        role: true,
+        fullName: true,  // <-- Aggiunto per includere il nome completo
+        avatarUrl: true  // <-- Aggiunto per includere l'URL dell'avatar
       }
     });
     res.json(users);
@@ -58,5 +68,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: "Errore nel recupero degli utenti" });
   }
 });
+router.patch('/me', authenticateToken, upload.single('avatar'), (req, res) => userController.updateProfile(req as any, res));
 
 export default router;

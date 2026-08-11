@@ -1,7 +1,19 @@
-// 1. Rimuoviamo FormEvent e importiamo React per intero (o come namespace)
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { Logo } from '../components/Logo';
+
+// --- PALETTE COLORI (Allineata al resto dell'App) ---
+const UI_COLORS = {
+  background: '#F4F5F7',
+  surface: '#FFFFFF',
+  textPrimary: '#172B4D',
+  textMuted: '#5E6C84',
+  border: '#DFE1E6',
+  primary: '#0052CC',
+  badgeHighBg: '#FFEBE6',
+  badgeHighText: '#BF2600',
+};
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,7 +22,6 @@ export const Login = () => {
   
   const navigate = useNavigate();
 
-  // 2. Usiamo React.FormEvent e specifichiamo che arriva da un HTMLFormElement
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); 
     setError(''); 
@@ -26,46 +37,63 @@ export const Login = () => {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', fontFamily: 'sans-serif' }}>
-      <h2>Accesso BugBoard26</h2>
+    <div style={{ backgroundColor: UI_COLORS.background, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
       
-      {error && (
-        <div style={{ backgroundColor: '#ffebee', color: '#c62828', padding: '10px', marginBottom: '15px', borderRadius: '4px' }}>
-          {error}
-        </div>
-      )}
+      {/* LOGO DELL'APP */}
+      <div style={{ marginBottom: '35px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Logo size={42} />
+        <p style={{ margin: '12px 0 0 0', color: UI_COLORS.textMuted, fontSize: '15px' }}>
+          Accedi per continuare
+        </p>
+      </div>
 
-      {/* Il resto del form rimane invariato */}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Email</label>
-          <input 
-            type="email" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-          />
-        </div>
+      {/* CARD DEL FORM */}
+      <div style={{ backgroundColor: UI_COLORS.surface, padding: '40px', borderRadius: '3px', width: '400px', maxWidth: '90%', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+        <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', color: UI_COLORS.textPrimary, textAlign: 'center' }}>Accesso</h2>
         
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Password</label>
-          <input 
-            type="password" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-          />
-        </div>
+        {error && (
+          <div style={{ backgroundColor: UI_COLORS.badgeHighBg, color: UI_COLORS.badgeHighText, padding: '10px', marginBottom: '20px', borderRadius: '3px', fontSize: '14px', fontWeight: 'bold', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
 
-        <button 
-          type="submit" 
-          style={{ padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-        >
-          Entra
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: UI_COLORS.textPrimary }}>Email</label>
+            <input 
+              type="email" 
+              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="Inserisci la tua email"
+              style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: `2px solid ${UI_COLORS.border}`, borderRadius: '3px', color: UI_COLORS.textPrimary, background: UI_COLORS.surface, outline: 'none' }}
+            />
+          </div>
+          
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: UI_COLORS.textPrimary }}>Password</label>
+            <input 
+              type="password" 
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="Inserisci la tua password"
+              style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: `2px solid ${UI_COLORS.border}`, borderRadius: '3px', color: UI_COLORS.textPrimary, background: UI_COLORS.surface, outline: 'none' }}
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            style={{ padding: '12px', backgroundColor: UI_COLORS.primary, color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px', marginTop: '10px' }}
+          >
+            Entra
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

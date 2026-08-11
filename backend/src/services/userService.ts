@@ -8,7 +8,7 @@ export class UserService {
   /**
    * Registra un nuovo utente nel sistema
    */
-  async createUser(email: string, plainTextPassword: string, role: Role = 'MEMBER') {
+  async createUser(email: string, plainTextPassword: string, fullName: string, role: any) {
     // 1. Controllo duplicati: Verifichiamo se l'email è già registrata
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -26,6 +26,7 @@ export class UserService {
       data: {
         email,
         password: hashedPassword,
+        fullName,
         role,
       },
     });

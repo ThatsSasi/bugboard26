@@ -196,15 +196,20 @@ export class IssueController {
         try {
             const issueId = parseInt(req.params.id as string, 10);
             const { name } = req.body; 
+            const modifierId = req.user?.userId; // <-- Aggiunto
+
+            if (!modifierId) {
+                res.status(401).json({ error: 'Accesso negato.' });
+                return;
+            }
 
             if (isNaN(issueId) || !name || typeof name !== 'string') {
                 res.status(400).json({ error: 'ID segnalazione o nome tag non validi.' });
                 return;
             }
 
-            const updatedIssue = await issueService.addTag(issueId, name);
+            const updatedIssue = await issueService.addTag(issueId, name, modifierId); // <-- Passato al service
             res.status(200).json(updatedIssue);
-        
         } catch (error: any) {
             res.status(400).json({ error: error.message || 'Errore durante l\'aggiunta del tag.' });
         }
@@ -214,15 +219,20 @@ export class IssueController {
         try {
             const issueId = parseInt(req.params.id as string, 10);
             const tagId = parseInt(req.params.tagId as string, 10);
+            const modifierId = req.user?.userId; // <-- Aggiunto
+
+            if (!modifierId) {
+                res.status(401).json({ error: 'Accesso negato.' });
+                return;
+            }
 
             if (isNaN(issueId) || isNaN(tagId)) {
                 res.status(400).json({ error: 'ID segnalazione o ID tag non validi.' });
                 return;
             }
 
-            const updatedIssue = await issueService.removeTag(issueId, tagId);
+            const updatedIssue = await issueService.removeTag(issueId, tagId, modifierId); // <-- Passato al service
             res.status(200).json(updatedIssue);
-        
         } catch (error: any) {
             res.status(400).json({ error: error.message || 'Errore durante la rimozione del tag.' });
         }

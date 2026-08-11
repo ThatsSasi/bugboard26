@@ -34,3 +34,14 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     next();
   });
 };
+
+export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  // Verifichiamo che l'utente esista (grazie al token) e che sia un ADMIN
+  if (!req.user || req.user.role !== 'ADMIN') {
+    res.status(403).json({ error: 'Accesso negato. Operazione riservata agli Amministratori.' });
+    return;
+  }
+  
+  // Se è un ADMIN, lo facciamo passare alla rotta successiva
+  next();
+};

@@ -1,6 +1,10 @@
 import api from './api';
 
 export const authService = {
+  register: async (email: string, password: string, fullName: string, role: string) => {
+    const response = await api.post('/users/register', { email, password, fullName, role });
+    return response.data;
+  },
   // La funzione per il Login
   login: async (email: string, password: string) => {
     // Usiamo api.post, l'URL finale sarà http://localhost:3000/api/users/login

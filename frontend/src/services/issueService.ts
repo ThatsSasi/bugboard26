@@ -14,6 +14,7 @@ export interface Issue {
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
   imageUrl?: string;
   assignee?: User | null;
+  reporter: User;
   tags?: Tag[];
 }
 
@@ -21,6 +22,8 @@ export interface User {
   id: number;
   email: string;
   role: string;
+  fullName?: string;   // <-- NUOVO
+  avatarUrl?: string;  // <-- NUOVO
 }
 
 export interface HistoryLog {
@@ -85,6 +88,15 @@ export const issueService = {
   getUsers: async (): Promise<User[]> => {
     const response = await api.get('/users'); 
     return response.data;
+  },
+
+  updateProfile: async (formData: FormData): Promise<User> => {
+    const response = await api.patch('/users/me', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data.user;
   },
 
   assignUser: async (issueId: number, userId: number | null): Promise<Issue> => {

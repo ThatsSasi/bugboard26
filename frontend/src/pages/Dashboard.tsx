@@ -3,20 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { issueService, type DashboardMetrics } from '../services/issueService';
 import { authService } from '../services/authService';
 
-// --- PALETTE COLORI (Allineata a BugBoard26) ---
+// --- PALETTE COLORI (Stile Jira Sincronizzata) ---
 const UI_COLORS = {
-  background: '#E1E4E8',
+  background: '#F4F5F7',
   surface: '#FFFFFF',    
-  surfaceAlt: '#F6F8FA',
+  surfaceAlt: '#F6F8FA', 
   textPrimary: '#172B4D',
   textMuted: '#5E6C84',  
-  border: '#D1D5DA',     
+  border: '#DFE1E6',     
   primary: '#0052CC',    
-  buttonSecondary: '#EBECF0',
-  buttonSecondaryText: '#172B4D',
+  primaryHover: '#0047B3',
+  buttonSecondary: '#F4F5F7',
+  buttonSecondaryText: '#42526E',
+  
   badgeHighBg: '#FFEBE6', badgeHighText: '#BF2600',
   badgeMedBg: '#FFFAE6',  badgeMedText: '#FF8B00',
   badgeLowBg: '#E3FCEF',  badgeLowText: '#006644',
+  badgeTypeBg: '#DEEBFF', badgeTypeText: '#0747A6',
+  badgeStatusBg: '#EAE6FF', badgeStatusText: '#403294'
 };
 
 export const Dashboard = () => {
@@ -26,6 +30,27 @@ export const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // 1. Controllo Proattivo dei Permessi lato Frontend
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.role !== 'ADMIN') {
+        // Se è un utente normale, lo rimandiamo alla Board senza disconnetterlo
+        navigate('/');
+        return;
+      }
+    } catch (e) {
+      authService.logout();
+      navigate('/login');
+      return;
+    }
+
+    // 2. Recupero delle metriche (avviene solo se si è superato il blocco sopra)
     const fetchMetrics = async () => {
       try {
         const data = await issueService.getDashboardMetrics();
@@ -35,7 +60,7 @@ export const Dashboard = () => {
           authService.logout();
           navigate('/login');
         } else {
-          setError('Impossibile caricare le metriche. Assicurati di avere i permessi di amministratore.');
+          setError('Impossibile caricare le metriche. Errore di comunicazione col server.');
         }
       } finally {
         setLoading(false);
@@ -45,7 +70,7 @@ export const Dashboard = () => {
   }, [navigate]);
 
   if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'sans-serif', color: UI_COLORS.textPrimary }}>Caricamento Report...</div>;
-  if (error) return <div style={{ textAlign: 'center', marginTop: '50px', color: UI_COLORS.badgeHighText }}>{error}</div>;
+  if (error) return <div style={{ textAlign: 'center', marginTop: '50px', color: UI_COLORS.badgeHighText, fontWeight: 'bold', padding: '20px' }}>{error}</div>;
   if (!metrics) return null;
 
   return (
@@ -53,14 +78,12 @@ export const Dashboard = () => {
       {/* STILI GLOBALI (Solo Scrollbar) */}
       <style>
         {`
-          /* 1. Applica la scrollbar personalizzata SIA alla cronologia CHE a tutta la pagina */
           ::-webkit-scrollbar, .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
-            height: 8px; /* Utile in caso di scroll orizzontale */
+            height: 8px;
           }
           ::-webkit-scrollbar-track, .custom-scrollbar::-webkit-scrollbar-track {
-            background: ${UI_COLORS.background};
-            border-radius: 4px;
+            background: transparent;
           }
           ::-webkit-scrollbar-thumb, .custom-scrollbar::-webkit-scrollbar-thumb {
             background: ${UI_COLORS.border};
@@ -69,11 +92,9 @@ export const Dashboard = () => {
           ::-webkit-scrollbar-thumb:hover, .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: ${UI_COLORS.textMuted};
           }
-          
-          /* 2. Supporto per Firefox (applicato globalmente) */
           * {
             scrollbar-width: thin;
-            scrollbar-color: ${UI_COLORS.border} ${UI_COLORS.background};
+            scrollbar-color: ${UI_COLORS.border} transparent;
           }
         `}
       </style>
@@ -87,7 +108,9 @@ export const Dashboard = () => {
           </div>
           <button 
             onClick={() => navigate('/')} 
-            style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: UI_COLORS.buttonSecondary, color: UI_COLORS.buttonSecondaryText, border: 'none', borderRadius: '4px', fontWeight: 'bold' }}
+            style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: UI_COLORS.buttonSecondary, color: UI_COLORS.buttonSecondaryText, border: `1px solid ${UI_COLORS.border}`, borderRadius: '4px', fontWeight: 'bold', transition: 'background-color 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = UI_COLORS.border}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = UI_COLORS.buttonSecondary}
           >
             ← Torna alla Board
           </button>
@@ -95,21 +118,21 @@ export const Dashboard = () => {
 
         {/* METRICHE AGGREGATE (Cards) */}
         <div style={{ display: 'flex', gap: '20px', marginBottom: '40px' }}>
-          <div style={{ flex: 1, backgroundColor: UI_COLORS.surface, padding: '25px', borderRadius: '8px', border: `1px solid ${UI_COLORS.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ flex: 1, backgroundColor: UI_COLORS.surface, padding: '25px', borderRadius: '4px', border: `1px solid ${UI_COLORS.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <h4 style={{ margin: '0 0 10px 0', color: UI_COLORS.textMuted, fontSize: '13px', textTransform: 'uppercase' }}>Issue Aperti</h4>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: UI_COLORS.badgeHighText }}>
               {metrics.aggregate.totalOpen}
             </div>
           </div>
           
-          <div style={{ flex: 1, backgroundColor: UI_COLORS.surface, padding: '25px', borderRadius: '8px', border: `1px solid ${UI_COLORS.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ flex: 1, backgroundColor: UI_COLORS.surface, padding: '25px', borderRadius: '4px', border: `1px solid ${UI_COLORS.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <h4 style={{ margin: '0 0 10px 0', color: UI_COLORS.textMuted, fontSize: '13px', textTransform: 'uppercase' }}>Issue Risolti</h4>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: UI_COLORS.badgeLowText }}>
               {metrics.aggregate.totalResolved}
             </div>
           </div>
 
-          <div style={{ flex: 1, backgroundColor: UI_COLORS.surface, padding: '25px', borderRadius: '8px', border: `1px solid ${UI_COLORS.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ flex: 1, backgroundColor: UI_COLORS.surface, padding: '25px', borderRadius: '4px', border: `1px solid ${UI_COLORS.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <h4 style={{ margin: '0 0 10px 0', color: UI_COLORS.textMuted, fontSize: '13px', textTransform: 'uppercase' }}>Tempo Medio Risoluzione</h4>
             <div style={{ fontSize: '36px', fontWeight: 'bold', color: UI_COLORS.primary }}>
               {metrics.aggregate.avgResolutionTimeHours.toFixed(1)} <span style={{ fontSize: '16px', color: UI_COLORS.textMuted }}>ore</span>
@@ -119,31 +142,41 @@ export const Dashboard = () => {
 
         {/* METRICHE DETTAGLIATE UTENTI (Tabella) */}
         <h3 style={{ margin: '0 0 20px 0', fontWeight: '600', fontSize: '20px' }}>Carico di Lavoro per Utente</h3>
-        <div style={{ backgroundColor: UI_COLORS.surface, borderRadius: '8px', border: `1px solid ${UI_COLORS.border}`, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div style={{ backgroundColor: UI_COLORS.surface, borderRadius: '4px', border: `1px solid ${UI_COLORS.border}`, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <thead>
-              <tr style={{ backgroundColor: '#F0F2F4', borderBottom: `2px solid ${UI_COLORS.textMuted}`, textAlign: 'left' }}>
+              <tr style={{ borderBottom: `2px solid ${UI_COLORS.border}`, textAlign: 'left' }}>
                 <th style={{ padding: '15px', color: UI_COLORS.textMuted, fontSize: '12px' }}>UTENTE</th>
-                <th style={{ padding: '15px', color: UI_COLORS.textMuted, fontSize: '12px', width: '150px' }}>IN CARICO (APERTI)</th>
-                <th style={{ padding: '15px', color: UI_COLORS.textMuted, fontSize: '12px', width: '150px' }}>RISOLTI</th>
+                <th style={{ padding: '15px', color: UI_COLORS.textMuted, fontSize: '12px', width: '180px' }}>IN CARICO (APERTI)</th>
+                <th style={{ padding: '15px', color: UI_COLORS.textMuted, fontSize: '12px', width: '180px' }}>RISOLTI</th>
                 <th style={{ padding: '15px', color: UI_COLORS.textMuted, fontSize: '12px', width: '200px' }}>TEMPO MEDIO (ORE)</th>
               </tr>
             </thead>
             <tbody>
               {metrics.userMetrics.map((user, index) => (
-                <tr key={user.userId} style={{ backgroundColor: index % 2 === 0 ? UI_COLORS.surface : UI_COLORS.surfaceAlt, borderBottom: `1px solid ${UI_COLORS.border}` }}>
-                  <td style={{ padding: '15px', fontWeight: 'bold', color: UI_COLORS.textPrimary }}>{user.email}</td>
+                <tr 
+                  key={user.userId} 
+                  style={{ borderBottom: `1px solid ${UI_COLORS.border}`, transition: 'background-color 0.1s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = UI_COLORS.surfaceAlt} 
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <td style={{ padding: '15px', color: UI_COLORS.textPrimary, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                     <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: UI_COLORS.background, display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '12px', fontWeight: 'bold', color: UI_COLORS.textPrimary }}>
+                        {user.email.charAt(0).toUpperCase()}
+                     </div>
+                     <span style={{ fontWeight: '500' }}>{user.email}</span>
+                  </td>
                   <td style={{ padding: '15px' }}>
-                    <span style={{ backgroundColor: UI_COLORS.badgeHighBg, color: UI_COLORS.badgeHighText, padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                    <span style={{ backgroundColor: UI_COLORS.badgeHighBg, color: UI_COLORS.badgeHighText, padding: '4px 10px', borderRadius: '3px', fontWeight: 'bold', fontSize: '13px' }}>
                       {user.openIssues}
                     </span>
                   </td>
                   <td style={{ padding: '15px' }}>
-                    <span style={{ backgroundColor: UI_COLORS.badgeLowBg, color: UI_COLORS.badgeLowText, padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                    <span style={{ backgroundColor: UI_COLORS.badgeLowBg, color: UI_COLORS.badgeLowText, padding: '4px 10px', borderRadius: '3px', fontWeight: 'bold', fontSize: '13px' }}>
                       {user.resolvedIssues}
                     </span>
                   </td>
-                  <td style={{ padding: '15px', color: UI_COLORS.textMuted, fontWeight: '500' }}>
+                  <td style={{ padding: '15px', color: UI_COLORS.textMuted, fontWeight: '500', fontSize: '14px' }}>
                     {user.avgResolutionTimeHours > 0 ? user.avgResolutionTimeHours.toFixed(1) : 'N/A'}
                   </td>
                 </tr>

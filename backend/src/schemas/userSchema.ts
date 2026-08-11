@@ -11,7 +11,9 @@ export const registerSchema = z.object({
       
     password: z.string({ message: 'La password è obbligatoria.' })
       .min(6, { message: 'La password deve contenere almeno 6 caratteri.' })
-      .max(50, { message: 'La password è troppo lunga.' })
+      .max(50, { message: 'La password è troppo lunga.' }),
+      
+    fullName: z.string().min(1, 'Il nome è obbligatorio')
   })
 });
 

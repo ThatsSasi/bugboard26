@@ -29,7 +29,8 @@ export class IssueService {
         reporter: {
           connect: { id: reporterId } 
         }
-      }
+      },
+      include: {reporter: true }
     });
 
     // 2. Creazione del log storico
@@ -69,10 +70,10 @@ export class IssueService {
       },
       include: {
         reporter: {
-          select: { id: true, email: true, role: true }
+          select: { id: true, email: true, role: true, fullName: true, avatarUrl: true }
         },
         assignee: { // <-- Aggiunto l'assegnatario per la board!
-          select: { id: true, email: true, role: true }
+          select: { id: true, email: true, role: true, fullName: true, avatarUrl: true }
         },
         tags: true
       }
@@ -81,30 +82,27 @@ export class IssueService {
     return issues;
   }
 
-  async updateStatus(issueId: number, newStatus: IssueStatus, modifierId: number) {
+async updateStatus(issueId: number, newStatus: IssueStatus, modifierId: number) {
     // 1. Recuperiamo lo stato attuale prima di modificarlo
     const existingIssue = await prisma.issue.findUnique({
       where: { id: issueId }
     });
 
-    if (!existingIssue) {
-      throw new Error('Segnalazione non trovata.');
-    }
+    if (!existingIssue) throw new Error('Segnalazione non trovata.');
+    if (existingIssue.status === newStatus) throw new Error('La segnalazione si trova già in questo stato.');
 
-    if (existingIssue.status === newStatus) {
-      throw new Error('La segnalazione si trova già in questo stato.');
+    // --- NUOVO: CONTROLLO PERMESSI (Requisito 6 e 9) ---
+    const modifier = await prisma.user.findUnique({ where: { id: modifierId } });
+    if (modifier?.role !== 'ADMIN' && existingIssue.assigneeId !== modifierId) {
+      throw new Error('Permesso negato: solo l\'utente assegnato (o un Amministratore) può modificare lo stato.');
     }
 
     // 2. Eseguiamo entrambe le query in una singola Transazione
     const [updatedIssue, log] = await prisma.$transaction([
-      
-      // Query A: Aggiorna l'issue
       prisma.issue.update({
         where: { id: issueId },
         data: { status: newStatus }
       }),
-
-      // Query B: Crea la traccia storica
       prisma.historyLog.create({
         data: {
           action: 'CHANGED_STATUS',
@@ -119,37 +117,32 @@ export class IssueService {
     return updatedIssue;
   }
 
-  async assignUser(issueId: number, assigneeId: number, modifierId: number) {
-    // 1. Recuperiamo l'issue per controllare a chi era assegnata prima
+  async assignUser(issueId: number, assigneeId: number | null, modifierId: number) {
     const existingIssue = await prisma.issue.findUnique({
       where: { id: issueId }
     });
 
-    if (!existingIssue) {
-      throw new Error('Segnalazione non trovata.');
+    if (!existingIssue) throw new Error('Segnalazione non trovata.');
+
+    const modifier = await prisma.user.findUnique({ where: { id: modifierId } });
+    if (modifier?.role !== 'ADMIN') {
+      throw new Error('Permesso negato: solo un Amministratore può assegnare le issue.');
     }
 
-    // Usiamo assigneeId esattamente come definito nello schema
     const oldAssignee = existingIssue.assigneeId ? existingIssue.assigneeId.toString() : 'UNASSIGNED';
-    const newAssignee = assigneeId.toString();
+    const newAssignee = assigneeId ? assigneeId.toString() : 'UNASSIGNED';
 
-    if (oldAssignee === newAssignee) {
-      throw new Error('Questo utente è già assegnato a questa segnalazione.');
-    }
+    if (oldAssignee === newAssignee) throw new Error('Questo utente è già assegnato a questa segnalazione.');
 
-    // 2. Eseguiamo la Transazione
-    const [updatedIssue, log] = await prisma.$transaction([
-      
-      // Query A: Aggiorna l'issue collegando il nuovo utente tramite la relazione 'assignee'
+    // 1. Creiamo un array dinamico di query per la Transazione
+    const queries: any[] = [
+      // Query A: Aggiorna l'issue collegando o scollegando l'assegnatario
       prisma.issue.update({
         where: { id: issueId },
         data: {
-          assignee: {
-            connect: { id: assigneeId } 
-          }
+          assignee: assigneeId ? { connect: { id: assigneeId } } : { disconnect: true }
         }
       }),
-
       // Query B: Crea la traccia storica
       prisma.historyLog.create({
         data: {
@@ -160,9 +153,24 @@ export class IssueService {
           modifier: { connect: { id: modifierId } }
         }
       })
-    ]);
+    ];
 
-    return updatedIssue;
+    // --- NUOVO: CREAZIONE NOTIFICA (Requisito 4) ---
+    if (assigneeId !== null) {
+      queries.push(
+        prisma.notification.create({
+          data: {
+            userId: assigneeId,
+            message: `Ti è stata assegnata una nuova issue: #${existingIssue.id} "${existingIssue.title}".`,
+            isRead: false
+          }
+        })
+      );
+    }
+
+    // 2. Eseguiamo tutte le query insieme
+    const results = await prisma.$transaction(queries);
+    return results[0]; // L'issue aggiornata è il primo risultato
   }
 
   async archive(issueId: number, modifierId: number) {
@@ -232,8 +240,17 @@ export class IssueService {
     return historyLogs;
   }
 
-  async addTag(issueId: number, tagName: string) {
-        // Normalizziamo il tag: tutto minuscolo e senza spazi extra
+  async addTag(issueId: number, tagName: string, modifierId: number) {
+        // 1. Controlliamo se l'issue esiste
+        const issue = await prisma.issue.findUnique({ where: { id: issueId } });
+        if (!issue) throw new Error('Segnalazione non trovata.');
+
+        // 2. Controllo Permessi (Requisito 9)
+        const modifier = await prisma.user.findUnique({ where: { id: modifierId } });
+        if (modifier?.role !== 'ADMIN' && issue.assigneeId !== modifierId) {
+            throw new Error('Permesso negato: solo l\'utente assegnato (o un Amministratore) può aggiungere etichette.');
+        }
+
         const name = tagName.toLowerCase().trim();
         
         return await prisma.issue.update({
@@ -246,20 +263,27 @@ export class IssueService {
                     }
                 }
             },
-            // Assicurati che le tue query restituiscano sempre anche assignee e tags!
-            include: { assignee: true, tags: true } 
+            include: { assignee: true, tags: true, reporter: true } 
         });
     }
 
-  async removeTag(issueId: number, tagId: number) {
+  async removeTag(issueId: number, tagId: number, modifierId: number) {
+        // 1. Controlliamo se l'issue esiste
+        const issue = await prisma.issue.findUnique({ where: { id: issueId } });
+        if (!issue) throw new Error('Segnalazione non trovata.');
+
+        // 2. Controllo Permessi (Requisito 9)
+        const modifier = await prisma.user.findUnique({ where: { id: modifierId } });
+        if (modifier?.role !== 'ADMIN' && issue.assigneeId !== modifierId) {
+            throw new Error('Permesso negato: solo l\'utente assegnato (o un Amministratore) può rimuovere etichette.');
+        }
+
         return await prisma.issue.update({
             where: { id: issueId },
             data: {
-                tags: {
-                    disconnect: { id: tagId } // Rimuove il legame, non elimina il tag dal DB
-                }
+                tags: { disconnect: { id: tagId } }
             },
-            include: { assignee: true, tags: true }
+            include: { assignee: true, tags: true, reporter: true }
         });
     }
 }
