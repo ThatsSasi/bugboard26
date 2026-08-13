@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { IssueController } from '../controllers/issueController';
 import { authenticateToken } from '../middlewares/authMiddleware';
 import { validate } from '../middlewares/validateMiddleware';
-import { createIssueSchema } from '../schemas/issueSchema';
+import { createIssueSchema, updateStatusSchema } from '../schemas/issueSchema';
 import { upload } from '../middlewares/uploadMiddleware';
 
 const router = Router();
@@ -117,7 +117,7 @@ router.get('/', authenticateToken, (req, res) => issueController.getAll(req as a
  *       400:
  *         description: Dati non validi
  */
-router.patch('/:id/status', authenticateToken, (req, res) => issueController.updateStatus(req as any, res));
+router.patch('/:id/status', authenticateToken, validate(updateStatusSchema), (req, res) => issueController.updateStatus(req as any, res));
 // Assegnare una Issue a un utente specifico (PATCH)
 router.patch('/:id/assign', authenticateToken, (req, res) => issueController.assignUser(req as any, res));
 // Archiviazione di una Issue (Soft Delete)

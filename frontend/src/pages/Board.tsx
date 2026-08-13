@@ -1,28 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { issueService, type Issue, type HistoryLog, type User, type AppNotification } from '../services/issueService';
+import { issueService } from '../services/issueService';
+import type { Issue, HistoryLog, User, AppNotification } from '../types';
 import { authService } from '../services/authService';
 import { Logo } from '../components/Logo';
-
-// --- PALETTE COLORI (Stile Jira) ---
-const UI_COLORS = {
-  background: '#F4F5F7', // Sfondo classico Jira per la sidebar e gli sfondi neutri
-  surface: '#FFFFFF',    // Bianco puro per l'area principale e le card
-  surfaceAlt: '#F6F8FA', 
-  textPrimary: '#172B4D',
-  textMuted: '#5E6C84',  
-  border: '#DFE1E6',     // Bordi più leggeri stile Atlassian
-  primary: '#0052CC',    
-  primaryHover: '#0047B3',
-  buttonSecondary: '#F4F5F7',
-  buttonSecondaryText: '#42526E',
-  
-  badgeHighBg: '#FFEBE6', badgeHighText: '#BF2600',
-  badgeMedBg: '#FFFAE6',  badgeMedText: '#FF8B00',
-  badgeLowBg: '#E3FCEF',  badgeLowText: '#006644',
-  badgeTypeBg: '#DEEBFF', badgeTypeText: '#0747A6',
-  badgeStatusBg: '#EAE6FF', badgeStatusText: '#403294'
-};
+import { UI_COLORS } from '../styles/theme';
 
 export const Board = () => {
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -83,7 +65,7 @@ export const Board = () => {
   const [newTagInput, setNewTagInput] = useState('');
   
   // STATI PER SIDEBAR
-  const [activeSidebarFilter, setActiveSidebarFilter] = useState<'ALL' | 'MY_OPEN' | 'DONE'>('ALL');
+  const [activeSidebarFilter, setActiveSidebarFilter] = useState<'ALL' | 'MY_OPEN' | 'DONE' | 'ARCHIVED'>('ALL');
 
   // STATI PER LE NOTIFICHE
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -284,35 +266,47 @@ export const Board = () => {
   };
 
   // NUOVO: Gestore per i click sulla Sidebar
-  const handleSidebarFilter = (filterType: 'ALL' | 'MY_OPEN' | 'DONE') => {
+  const handleSidebarFilter = (filterType: 'ALL' | 'MY_OPEN' | 'DONE' | 'ARCHIVED') => {
     setActiveSidebarFilter(filterType);
     if (filterType === 'ALL') {
       setAppliedFilters({ search: '', tag: '', status: 'TUTTI', type: 'TUTTI', sort: 'DESC', assigneeId: null });
       setTempStatus('TUTTI');
     } else if (filterType === 'MY_OPEN') {
-      // TODO_IN_PROGRESS è un flag speciale gestito giù nel filter
       setAppliedFilters({ search: '', tag: '', status: 'TODO_IN_PROGRESS', type: 'TUTTI', sort: 'DESC', assigneeId: loggedUserId });
       setTempStatus('TUTTI');
     } else if (filterType === 'DONE') {
       setAppliedFilters({ search: '', tag: '', status: 'RESOLVED', type: 'TUTTI', sort: 'DESC', assigneeId: null });
       setTempStatus('RESOLVED');
+    } else if (filterType === 'ARCHIVED') {
+      // Applica ESATTAMENTE lo status ARCHIVED
+      setAppliedFilters({ search: '', tag: '', status: 'ARCHIVED', type: 'TUTTI', sort: 'DESC', assigneeId: null });
+      setTempStatus('ARCHIVED');
     }
     setCurrentPage(1);
   };
 
   let processedIssues = issues.filter(issue => {
+    // 1. BLOCCO SICUREZZA: I membri normali non vedono mai le issue archiviate, ovunque si trovino.
+    if (loggedUserRole !== 'ADMIN' && issue.status === 'ARCHIVED') {
+      return false;
+    }
+
     const matchesSearch = issue.title.toLowerCase().includes(appliedFilters.search.toLowerCase());
     const matchesType = appliedFilters.type === 'TUTTI' || issue.type === appliedFilters.type;
     const matchesTag = appliedFilters.tag === '' || (issue.tags && issue.tags.some(t => t.name.toLowerCase().includes(appliedFilters.tag.toLowerCase())));
     
-    // Controllo speciale per "MY_OPEN" che include due stati
-    const matchesStatus = appliedFilters.status === 'TUTTI' 
-      ? true 
-      : appliedFilters.status === 'TODO_IN_PROGRESS' 
-        ? (issue.status === 'TODO' || issue.status === 'IN_PROGRESS')
-        : issue.status === appliedFilters.status;
+    // 2. LOGICA DI FILTRO STATO MIGLIORATA
+    let matchesStatus = false;
+    if (appliedFilters.status === 'TUTTI') {
+      // Quando sei su "Tutte le issue", nascondi le archiviate per tenere pulita la vista
+      matchesStatus = issue.status !== 'ARCHIVED';
+    } else if (appliedFilters.status === 'TODO_IN_PROGRESS') {
+      matchesStatus = (issue.status === 'TODO' || issue.status === 'IN_PROGRESS');
+    } else {
+      // Questo "cattura" in modo esatto la parola 'ARCHIVED' (o 'RESOLVED')
+      matchesStatus = issue.status === appliedFilters.status;
+    }
 
-    // Controllo sull'assegnatario per "Le mie issue"
     const matchesAssignee = appliedFilters.assigneeId === null || issue.assignee?.id === appliedFilters.assigneeId;
 
     return matchesSearch && matchesStatus && matchesType && matchesTag && matchesAssignee;
@@ -504,7 +498,16 @@ export const Board = () => {
           >
             Issue chiuse
           </div>
-
+          
+          {/* NUOVO: Bottone visibile solo agli ADMIN */}
+          {loggedUserRole === 'ADMIN' && (
+            <div 
+              onClick={() => handleSidebarFilter('ARCHIVED')}
+              style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: activeSidebarFilter === 'ARCHIVED' ? '#EBECF0' : 'transparent', color: activeSidebarFilter === 'ARCHIVED' ? UI_COLORS.primary : UI_COLORS.textPrimary, fontWeight: activeSidebarFilter === 'ARCHIVED' ? 'bold' : 'normal', borderLeft: activeSidebarFilter === 'ARCHIVED' ? `4px solid ${UI_COLORS.primary}` : '4px solid transparent' }}
+            >
+              Issue archiviate
+            </div>
+          )}
           {/* MENU AMMINISTRATORE */}
           {loggedUserRole === 'ADMIN' && (
             <>
@@ -557,6 +560,7 @@ export const Board = () => {
                 <option value="TODO">TODO</option>
                 <option value="IN_PROGRESS">IN PROGRESS</option>
                 <option value="RESOLVED">RESOLVED</option>
+                {loggedUserRole === 'ADMIN' && <option value="ARCHIVED">ARCHIVED</option>}
               </select>
               <select value={tempType} onChange={(e) => setTempType(e.target.value)} style={{ padding: '8px 12px', border: `2px solid ${UI_COLORS.border}`, borderRadius: '4px', color: UI_COLORS.textPrimary, backgroundColor: UI_COLORS.background }}>
                 <option value="TUTTI">Tipo: Tutti</option>

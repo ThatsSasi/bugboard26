@@ -49,9 +49,7 @@ export class IssueService {
 
   async getAll(filters: IssueFilters = {}) {
     // Partiamo dalla base: non vogliamo mai vedere i bug archiviati
-    const whereClause: any = {
-      status: { not: IssueStatus.ARCHIVED }
-    };
+    const whereClause: any = {};
 
     // Se il client ha richiesto uno stato specifico, sovrascriviamo la regola
     if (filters.status) {
@@ -82,7 +80,7 @@ export class IssueService {
     return issues;
   }
 
-async updateStatus(issueId: number, newStatus: IssueStatus, modifierId: number) {
+  async updateStatus(issueId: number, newStatus: IssueStatus, modifierId: number) {
     // 1. Recuperiamo lo stato attuale prima di modificarlo
     const existingIssue = await prisma.issue.findUnique({
       where: { id: issueId }

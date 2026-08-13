@@ -1,32 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { issueService, type DashboardMetrics } from '../services/issueService';
+import { issueService } from '../services/issueService';
+import type { DashboardMetrics } from '../types';
 import { authService } from '../services/authService';
-
-// --- PALETTE COLORI (Stile Jira Sincronizzata) ---
-const UI_COLORS = {
-  background: '#F4F5F7',
-  surface: '#FFFFFF',    
-  surfaceAlt: '#F6F8FA', 
-  textPrimary: '#172B4D',
-  textMuted: '#5E6C84',  
-  border: '#DFE1E6',     
-  primary: '#0052CC',    
-  primaryHover: '#0047B3',
-  buttonSecondary: '#F4F5F7',
-  buttonSecondaryText: '#42526E',
-  
-  badgeHighBg: '#FFEBE6', badgeHighText: '#BF2600',
-  badgeMedBg: '#FFFAE6',  badgeMedText: '#FF8B00',
-  badgeLowBg: '#E3FCEF',  badgeLowText: '#006644',
-  badgeTypeBg: '#DEEBFF', badgeTypeText: '#0747A6',
-  badgeStatusBg: '#EAE6FF', badgeStatusText: '#403294'
-};
+import { UI_COLORS } from '../styles/theme';
 
 export const Dashboard = () => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // NUOVO: Stato per il selettore del mese (inizializzato al mese corrente)
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,7 +40,8 @@ export const Dashboard = () => {
     // 2. Recupero delle metriche (avviene solo se si è superato il blocco sopra)
     const fetchMetrics = async () => {
       try {
-        const data = await issueService.getDashboardMetrics();
+        const [year, month] = selectedMonth.split('-'); // Estraiamo YYYY e MM stringa
+        const data = await issueService.getDashboardMetrics(Number(month), Number(year));
         setMetrics(data);
       } catch (err: any) {
         if (err.response?.status === 401 || err.response?.status === 403) {
@@ -67,7 +55,7 @@ export const Dashboard = () => {
       }
     };
     fetchMetrics();
-  }, [navigate]);
+  }, [navigate, selectedMonth]);
 
   if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'sans-serif', color: UI_COLORS.textPrimary }}>Caricamento Report...</div>;
   if (error) return <div style={{ textAlign: 'center', marginTop: '50px', color: UI_COLORS.badgeHighText, fontWeight: 'bold', padding: '20px' }}>{error}</div>;
@@ -102,11 +90,52 @@ export const Dashboard = () => {
         
         {/* HEADER */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `2px solid ${UI_COLORS.border}`, paddingBottom: '15px', marginBottom: '30px' }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: UI_COLORS.textPrimary }}>Report Mensile Attività</h2>
-            <p style={{ margin: '5px 0 0 0', color: UI_COLORS.textMuted, fontSize: '14px' }}>Dashboard riservata agli Amministratori</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: UI_COLORS.textPrimary }}>Report Mensile Attività</h2>
+              <p style={{ margin: '5px 0 0 0', color: UI_COLORS.textMuted, fontSize: '14px' }}>Dashboard riservata agli Amministratori</p>
+            </div>
+            
+            {/* NUOVO: Selettori espliciti per Mese e Anno */}
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', color: UI_COLORS.textMuted, fontWeight: 'bold', marginRight: '5px' }}>📅 PERIODO:</span>
+              
+              {/* TENDINA MESE */}
+              <select 
+                value={selectedMonth.split('-')[1]} 
+                onChange={(e) => setSelectedMonth(`${selectedMonth.split('-')[0]}-${e.target.value}`)}
+                style={{ padding: '8px 12px', border: `2px solid ${UI_COLORS.border}`, borderRadius: '4px', color: UI_COLORS.textPrimary, backgroundColor: UI_COLORS.surface, fontWeight: 'bold', cursor: 'pointer', outline: 'none' }}
+              >
+                <option value="01">Gennaio</option>
+                <option value="02">Febbraio</option>
+                <option value="03">Marzo</option>
+                <option value="04">Aprile</option>
+                <option value="05">Maggio</option>
+                <option value="06">Giugno</option>
+                <option value="07">Luglio</option>
+                <option value="08">Agosto</option>
+                <option value="09">Settembre</option>
+                <option value="10">Ottobre</option>
+                <option value="11">Novembre</option>
+                <option value="12">Dicembre</option>
+              </select>
+
+              {/* TENDINA ANNO */}
+              <select 
+                value={selectedMonth.split('-')[0]} 
+                onChange={(e) => setSelectedMonth(`${e.target.value}-${selectedMonth.split('-')[1]}`)}
+                style={{ padding: '8px 12px', border: `2px solid ${UI_COLORS.border}`, borderRadius: '4px', color: UI_COLORS.textPrimary, backgroundColor: UI_COLORS.surface, fontWeight: 'bold', cursor: 'pointer', outline: 'none' }}
+              >
+                {/* Genera dinamicamente l'anno in corso e i 4 anni precedenti */}
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = new Date().getFullYear() - i;
+                  return <option key={year} value={year}>{year}</option>;
+                })}
+              </select>
+            </div>
           </div>
-          <button 
+          
+          <button
             onClick={() => navigate('/')} 
             style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: UI_COLORS.buttonSecondary, color: UI_COLORS.buttonSecondaryText, border: `1px solid ${UI_COLORS.border}`, borderRadius: '4px', fontWeight: 'bold', transition: 'background-color 0.2s' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = UI_COLORS.border}
@@ -153,7 +182,7 @@ export const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {metrics.userMetrics.map((user, index) => (
+              {metrics.userMetrics.map((user) => (
                 <tr 
                   key={user.userId} 
                   style={{ borderBottom: `1px solid ${UI_COLORS.border}`, transition: 'background-color 0.1s' }}
@@ -161,10 +190,26 @@ export const Dashboard = () => {
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   <td style={{ padding: '15px', color: UI_COLORS.textPrimary, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                     <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: UI_COLORS.background, display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '12px', fontWeight: 'bold', color: UI_COLORS.textPrimary }}>
-                        {user.email.charAt(0).toUpperCase()}
-                     </div>
-                     <span style={{ fontWeight: '500' }}>{user.email}</span>
+                    {/* AVATAR: Se c'è l'immagine la mostra, altrimenti mostra l'iniziale del nome (o email se manca) */}
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', border: `1px solid ${UI_COLORS.border}` }} />
+                    ) : (
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: UI_COLORS.background, display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '12px', fontWeight: 'bold', color: UI_COLORS.textPrimary }}>
+                        {(user.fullName || user.email).charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    
+                    {/* NOME ED EMAIL: Mostra il nome in grassetto e l'email piccola sotto (se il nome è disponibile) */}
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontWeight: '500', fontSize: '14px' }}>
+                        {user.fullName || user.email.split('@')[0]}
+                      </span>
+                      {user.fullName && (
+                        <span style={{ fontSize: '11px', color: UI_COLORS.textMuted }}>
+                          {user.email}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td style={{ padding: '15px' }}>
                     <span style={{ backgroundColor: UI_COLORS.badgeHighBg, color: UI_COLORS.badgeHighText, padding: '4px 10px', borderRadius: '3px', fontWeight: 'bold', fontSize: '13px' }}>

@@ -1,6 +1,8 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { prisma } from '..'; // Assicurati che il path verso la tua istanza Prisma sia corretto
+import { NotificationService } from '../services/notificationService';
+
+const notificationService = new NotificationService();
 
 export class NotificationController {
     
@@ -14,14 +16,8 @@ export class NotificationController {
                 return;
             }
 
-            const notifications = await prisma.notification.findMany({
-                where: { 
-                    userId: userId 
-                },
-                orderBy: { 
-                    createdAt: 'desc' // Le più recenti in alto
-                }
-            });
+            // Deleghiamo la query al Service
+            const notifications = await notificationService.getUserNotifications(userId);
 
             res.status(200).json(notifications);
         } catch (error) {
@@ -46,26 +42,19 @@ export class NotificationController {
                 return;
             }
 
-            // Usiamo updateMany per garantire che l'utente stia modificando SOLO una SUA notifica
-            const result = await prisma.notification.updateMany({
-                where: { 
-                    id: notifId,
-                    userId: userId 
-                },
-                data: { 
-                    isRead: true 
-                }
-            });
-
-            if (result.count === 0) {
-                res.status(404).json({ error: 'Notifica non trovata o già aggiornata.' });
-                return;
-            }
+            // Deleghiamo l'aggiornamento al Service
+            await notificationService.markAsRead(notifId, userId);
 
             res.status(200).json({ message: 'Notifica segnata come letta.' });
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            res.status(500).json({ error: 'Errore durante l\'aggiornamento della notifica.' });
+            
+            // Gestiamo l'errore specifico lanciato dal Service
+            if (error.message === 'NOT_FOUND') {
+                res.status(404).json({ error: 'Notifica non trovata o già aggiornata.' });
+            } else {
+                res.status(500).json({ error: 'Errore durante l\'aggiornamento della notifica.' });
+            }
         }
     }
 }

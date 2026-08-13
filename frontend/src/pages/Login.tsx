@@ -1,19 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { Logo } from '../components/Logo';
-
-// --- PALETTE COLORI (Allineata al resto dell'App) ---
-const UI_COLORS = {
-  background: '#F4F5F7',
-  surface: '#FFFFFF',
-  textPrimary: '#172B4D',
-  textMuted: '#5E6C84',
-  border: '#DFE1E6',
-  primary: '#0052CC',
-  badgeHighBg: '#FFEBE6',
-  badgeHighText: '#BF2600',
-};
+import { UI_COLORS } from '../styles/theme';
 
 export const Login = () => {
   const [email, setEmail] = useState('');

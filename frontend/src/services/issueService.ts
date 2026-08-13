@@ -1,64 +1,5 @@
 import api from './api';
-
-export interface Tag {
-  id: number;
-  name: string;
-}
-
-export interface Issue {
-  id: number;
-  title: string;
-  description: string;
-  status: 'TODO' | 'IN_PROGRESS' | 'RESOLVED' | 'ARCHIVED';
-  type: 'QUESTION' | 'BUG' | 'DOCUMENTATION' | 'FEATURE';
-  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
-  imageUrl?: string;
-  assignee?: User | null;
-  reporter: User;
-  tags?: Tag[];
-}
-
-export interface User {
-  id: number;
-  email: string;
-  role: string;
-  fullName?: string;   // <-- NUOVO
-  avatarUrl?: string;  // <-- NUOVO
-}
-
-export interface HistoryLog {
-  id: number;
-  action: string;
-  oldValue: string | null;
-  newValue: string | null;
-  modifiedAt: string;
-  modifier: User;
-}
-
-export interface AppNotification {
-  id: number;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
-}
-
-// NUOVE INTERFACCE PER LA DASHBOARD
-export interface UserMetric {
-  userId: number;
-  email: string;
-  openIssues: number;
-  resolvedIssues: number;
-  avgResolutionTimeHours: number;
-}
-
-export interface DashboardMetrics {
-  aggregate: {
-    totalOpen: number;
-    totalResolved: number;
-    avgResolutionTimeHours: number;
-  };
-  userMetrics: UserMetric[];
-}
+import type { Issue, HistoryLog, User, AppNotification, DashboardMetrics } from '../types';
 
 export const issueService = {
   getAll: async (): Promise<Issue[]> => {
@@ -124,9 +65,16 @@ export const issueService = {
     return response.data;
   },
 
-  getDashboardMetrics: async (): Promise<DashboardMetrics> => {
-    // Effettuiamo la vera chiamata all'endpoint che hai creato!
-    const response = await api.get('/reports/metrics');
+  // METODO CORRETTO E COERENTE CON IL RESTO DEL FILE
+  getDashboardMetrics: async (month?: number, year?: number): Promise<DashboardMetrics> => {
+    // Axios gestisce automaticamente la creazione della query string (?month=X&year=Y)
+    // ignorando i parametri se sono undefined.
+    const response = await api.get('/reports/metrics', {
+      params: {
+        month: month,
+        year: year
+      }
+    });
     return response.data;
   }
 };

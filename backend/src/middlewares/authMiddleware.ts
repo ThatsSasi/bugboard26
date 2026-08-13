@@ -21,7 +21,13 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   }
 
   // 3. Verifichiamo la validità del token
-  const secret = process.env.JWT_SECRET || 'fallback_secret';
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret) {
+    // Errore 500 perché è un problema del server, non dell'utente
+    res.status(500).json({ error: 'Errore di configurazione del server (JWT_SECRET mancante).' });
+    return;
+  }
   
   jwt.verify(token, secret, (err, decodedUser) => {
     if (err) {

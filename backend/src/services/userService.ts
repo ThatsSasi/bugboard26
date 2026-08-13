@@ -57,7 +57,13 @@ export class UserService {
     }
 
     // 3. Generiamo il token JWT inserendo nel payload l'ID e il ruolo dell'utente
-    const secret = process.env.JWT_SECRET || 'fallback_secret';
+    const secret = process.env.JWT_SECRET;
+
+    // Approccio Fail-Fast: se manca il secret nel file .env, blocchiamo tutto
+    if (!secret) {
+      throw new Error('CONFIG ERROR: JWT_SECRET mancante nelle variabili d\'ambiente.');
+    }
+    
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       secret,
