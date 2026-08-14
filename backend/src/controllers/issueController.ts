@@ -82,22 +82,6 @@ export class IssueController {
                 return;
             }
 
-            // CREAZIONE REALE DELLA NOTIFICA QUANDO IL BUG VIENE RISOLTO
-            if (status === 'RESOLVED') {
-                const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-                
-                // Verifichiamo che l'issue esista e abbia un creatore (reporter)
-                if (issue && issue.reporterId) {
-                    await prisma.notification.create({
-                        data: {
-                            userId: issue.reporterId,
-                            message: `La issue #${issue.id} "${issue.title}" che avevi segnalato è stata RISOLTA.`,
-                            isRead: false
-                        }
-                    });
-                }
-            }
-
             const updatedIssue = await issueService.updateStatus(
                 issueId, 
                 status as IssueStatus, 

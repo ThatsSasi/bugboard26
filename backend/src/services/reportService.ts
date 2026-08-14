@@ -27,17 +27,19 @@ export class ReportService {
     const globalResolvedIssues = await prisma.issue.findMany({
       where: { 
         status: 'RESOLVED',
-        updatedAt: { gte: startOfMonth, lt: endOfMonth } 
+        resolvedAt: { gte: startOfMonth, lt: endOfMonth } // <-- RICERCA CORRETTA!
       },
-      select: { createdAt: true, updatedAt: true } 
+      select: { createdAt: true, updatedAt: true, resolvedAt: true } // <-- SELECT CORRETTA!
     });
 
     const totalResolved = globalResolvedIssues.length;
     let globalTotalHours = 0;
 
     globalResolvedIssues.forEach(issue => {
-      const diffMs = issue.updatedAt.getTime() - issue.createdAt.getTime();
-      globalTotalHours += diffMs / (1000 * 60 * 60); 
+      if (issue.resolvedAt) {
+        const diffMs = issue.resolvedAt.getTime() - issue.createdAt.getTime();
+        globalTotalHours += diffMs / (1000 * 60 * 60); 
+      }
     });
 
     const globalAvgTime = totalResolved > 0 ? globalTotalHours / totalResolved : 0;
@@ -60,15 +62,17 @@ export class ReportService {
         where: { 
           assigneeId: user.id, 
           status: 'RESOLVED',
-          updatedAt: { gte: startOfMonth, lt: endOfMonth } 
+          resolvedAt: { gte: startOfMonth, lt: endOfMonth } // <-- RICERCA CORRETTA!
         },
-        select: { createdAt: true, updatedAt: true }
+        select: { createdAt: true, updatedAt: true, resolvedAt: true } // <-- SELECT CORRETTA!
       });
 
       let userHours = 0;
       userResolved.forEach(issue => {
-        const diffMs = issue.updatedAt.getTime() - issue.createdAt.getTime();
-        userHours += diffMs / (1000 * 60 * 60);
+        if (issue.resolvedAt) { // <-- FORMULA CORRETTA!
+          const diffMs = issue.resolvedAt.getTime() - issue.createdAt.getTime();
+          userHours += diffMs / (1000 * 60 * 60);
+        }
       });
 
       const userAvgTime = userResolved.length > 0 ? userHours / userResolved.length : 0;

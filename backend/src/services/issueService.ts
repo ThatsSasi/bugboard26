@@ -81,25 +81,26 @@ export class IssueService {
   }
 
   async updateStatus(issueId: number, newStatus: IssueStatus, modifierId: number) {
-    // 1. Recuperiamo lo stato attuale prima di modificarlo
-    const existingIssue = await prisma.issue.findUnique({
-      where: { id: issueId }
-    });
+    const existingIssue = await prisma.issue.findUnique({ where: { id: issueId } });
 
     if (!existingIssue) throw new Error('Segnalazione non trovata.');
     if (existingIssue.status === newStatus) throw new Error('La segnalazione si trova già in questo stato.');
 
-    // --- NUOVO: CONTROLLO PERMESSI (Requisito 6 e 9) ---
     const modifier = await prisma.user.findUnique({ where: { id: modifierId } });
     if (modifier?.role !== 'ADMIN' && existingIssue.assigneeId !== modifierId) {
       throw new Error('Permesso negato: solo l\'utente assegnato (o un Amministratore) può modificare lo stato.');
     }
 
-    // 2. Eseguiamo entrambe le query in una singola Transazione
-    const [updatedIssue, log] = await prisma.$transaction([
+    // 1. Array dinamico di query per la transazione
+    const queries: any[] = [
+      // PASSAGGIO B: Ecco l'update modificato!
       prisma.issue.update({
         where: { id: issueId },
-        data: { status: newStatus }
+        data: { 
+          status: newStatus,
+          // Registra la data attuale se lo stato passa a RESOLVED, altrimenti resetta a null
+          resolvedAt: newStatus === IssueStatus.RESOLVED ? new Date() : null 
+        }
       }),
       prisma.historyLog.create({
         data: {
@@ -110,9 +111,24 @@ export class IssueService {
           modifier: { connect: { id: modifierId } }
         }
       })
-    ]);
+    ];
 
-    return updatedIssue;
+    // 2. Creazione della notifica (se il nuovo stato è RESOLVED)
+    if (newStatus === IssueStatus.RESOLVED && existingIssue.reporterId) {
+       queries.push(
+         prisma.notification.create({
+           data: {
+             userId: existingIssue.reporterId,
+             message: `La issue #${existingIssue.id} "${existingIssue.title}" che avevi segnalato è stata RISOLTA.`,
+             isRead: false
+           }
+         })
+       );
+    }
+
+    // 3. Eseguiamo tutto in blocco (Transazione ACID)
+    const results = await prisma.$transaction(queries);
+    return results[0]; 
   }
 
   async assignUser(issueId: number, assigneeId: number | null, modifierId: number) {

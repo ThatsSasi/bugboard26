@@ -1,6 +1,5 @@
-import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import type { Issue } from '../services/issueService';
+import type { Issue } from '../types';
 
 interface IssueCardProps {
   issue: Issue;

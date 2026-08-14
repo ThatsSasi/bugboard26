@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { issueService } from '../services/issueService';
+import { reportService } from '../services/reportService';
 import type { DashboardMetrics } from '../types';
 import { authService } from '../services/authService';
 import { UI_COLORS } from '../styles/theme';
@@ -41,7 +41,7 @@ export const Dashboard = () => {
     const fetchMetrics = async () => {
       try {
         const [year, month] = selectedMonth.split('-'); // Estraiamo YYYY e MM stringa
-        const data = await issueService.getDashboardMetrics(Number(month), Number(year));
+        const data = await reportService.getDashboardMetrics(Number(month), Number(year));
         setMetrics(data);
       } catch (err: any) {
         if (err.response?.status === 401 || err.response?.status === 403) {
