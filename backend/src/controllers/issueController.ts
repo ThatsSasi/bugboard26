@@ -2,7 +2,6 @@ import { Response } from 'express';
 import { IssueService, IssueCreateDTO } from '../services/issueService';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { IssueStatus } from '@prisma/client';
-import { prisma } from '..';
 
 const issueService = new IssueService();
 

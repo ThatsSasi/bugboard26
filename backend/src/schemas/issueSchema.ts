@@ -7,7 +7,7 @@ export const createIssueSchema = z.object({
     type: z.enum(['QUESTION', 'BUG', 'DOCUMENTATION', 'FEATURE']),
     // Zod .optional() corrisponde al punto interrogativo (?) di Prisma
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
-    imageUrl: z.string().url('Deve essere un URL valido').optional()
+    imageUrl: z.url('Deve essere un URL valido').optional()
   })
 });
 

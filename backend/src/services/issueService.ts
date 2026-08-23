@@ -200,7 +200,7 @@ export class IssueService {
       throw new Error('La segnalazione è già stata archiviata.');
     }
 
-    const [archivedIssue, log] = await prisma.$transaction([
+    const [archivedIssue] = await prisma.$transaction([
       
       // Query A: Spostiamo lo stato su ARCHIVED
       prisma.issue.update({
