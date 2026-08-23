@@ -38,10 +38,10 @@ router.post(
  *             properties:
  *               email:
  *                 type: string
- *                 example: "test@studente.it"
+ *                 example: "admin@bugboard.it"
  *               password:
  *                 type: string
- *                 example: "SuperSecretPassword123!"
+ *                 example: "Admin123!"
  *     responses:
  *       200:
  *         description: Login effettuato, restituisce il token JWT
