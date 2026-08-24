@@ -17,6 +17,8 @@ const issueController = new IssueController();
  *   post:
  *     summary: Crea una nuova Issue
  *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -37,9 +39,10 @@ const issueController = new IssueController();
  *               type:
  *                 type: string
  *                 enum: [BUG, FEATURE, QUESTION, DOCUMENTATION]
- *              priority:
+ *               priority:
  *                 type: string
  *                 enum: [LOW, MEDIUM, HIGH]
+ *                 description: "Priorità della segnalazione (opzionale)"
  *     responses:
  *       201:
  *         description: Segnalazione creata con successo
@@ -69,6 +72,8 @@ router.post(
  *     summary: Recupera la lista di tutte le Issue
  *     description: Restituisce tutte le segnalazioni attive. Supporta il filtraggio tramite query parameters.
  *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: status
@@ -95,6 +100,8 @@ router.get('/', authenticateToken, (req, res) => issueController.getAll(req as a
  *   patch:
  *     summary: Aggiorna lo stato di una Issue
  *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
