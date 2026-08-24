@@ -37,6 +37,9 @@ const issueController = new IssueController();
  *               type:
  *                 type: string
  *                 enum: [BUG, FEATURE, QUESTION, DOCUMENTATION]
+ *              priority:
+ *                 type: string
+ *                 enum: [LOW, MEDIUM, HIGH]
  *     responses:
  *       201:
  *         description: Segnalazione creata con successo
@@ -119,13 +122,133 @@ router.get('/', authenticateToken, (req, res) => issueController.getAll(req as a
  */
 router.patch('/:id/status', authenticateToken, validate(updateStatusSchema), (req, res) => issueController.updateStatus(req as any, res));
 // Assegnare una Issue a un utente specifico (PATCH)
+/**
+ * @swagger
+ * /api/issues/{id}/assign:
+ *   patch:
+ *     summary: Assegna una issue a un utente
+ *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               assigneeId:
+ *                 type: integer
+ *                 nullable: true
+ *                 example: 2
+ *     responses:
+ *       200:
+ *         description: Segnalazione assegnata con successo
+ */
 router.patch('/:id/assign', authenticateToken, (req, res) => issueController.assignUser(req as any, res));
 // Archiviazione di una Issue (Soft Delete)
+/**
+ * @swagger
+ * /api/issues/{id}:
+ *   delete:
+ *     summary: Archivia una issue (Soft Delete)
+ *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Segnalazione archiviata con successo
+ *       403:
+ *         description: Accesso negato
+ */
 router.delete('/:id', authenticateToken, (req, res) => issueController.delete(req as any, res));
 // Ottenere la cronologia di una specifica Issue (GET)
+/**
+ * @swagger
+ * /api/issues/{id}/history:
+ *   get:
+ *     summary: Ottiene la cronologia delle modifiche di una issue
+ *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista dei log storici recuperata
+ */
 router.get('/:id/history', authenticateToken, (req, res) => issueController.getHistory(req as any, res));
 // Gestione dei Tag
+/**
+ * @swagger
+ * /api/issues/{id}/tags:
+ *   post:
+ *     summary: Aggiunge un tag a una issue
+ *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "frontend"
+ *     responses:
+ *       200:
+ *         description: Tag aggiunto con successo
+ */
 router.post('/:id/tags', authenticateToken, (req, res) => issueController.addTag(req as any, res));
+/**
+ * @swagger
+ * /api/issues/{id}/tags/{tagId}:
+ *   delete:
+ *     summary: Rimuove un tag specifico da una issue
+ *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: tagId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Tag rimosso con successo
+ */
 router.delete('/:id/tags/:tagId', authenticateToken, (req, res) => issueController.removeTag(req as any, res));
 
 export default router;

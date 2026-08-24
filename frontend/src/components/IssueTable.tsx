@@ -34,7 +34,7 @@ export const IssueTable: React.FC<IssueTableProps> = ({ issues, onRowClick }) =>
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = UI_COLORS.surfaceAlt} 
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <td style={{ padding: '16px 24px', color: UI_COLORS.textMuted, fontSize: '13px' }}>NUC-{issue.id}</td>
+                <td style={{ padding: '16px 24px', color: UI_COLORS.textMuted, fontSize: '13px' }}>ID-{issue.id}</td>
                 <td style={{ padding: '16px 24px', whiteSpace: 'normal', wordBreak: 'break-word', color: UI_COLORS.primary, fontWeight: '500' }}>{issue.title}</td>
                 <td style={{ padding: '16px 24px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   <span style={{ backgroundColor: UI_COLORS.badgeTypeBg, color: UI_COLORS.badgeTypeText, padding: '2px 6px', borderRadius: '3px', fontSize: '11px', fontWeight: 'bold' }}>{issue.type}</span>
