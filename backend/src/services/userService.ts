@@ -77,4 +77,16 @@ export class UserService {
       token,
     };
   }
+
+  async getAllUsers() {
+    return await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        fullName: true,
+        avatarUrl: true
+      }
+    });
+  }
 }

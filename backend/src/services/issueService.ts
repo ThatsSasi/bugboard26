@@ -90,6 +90,10 @@ export class IssueService {
     if (modifier?.role !== 'ADMIN' && existingIssue.assigneeId !== modifierId) {
       throw new Error('Permesso negato: solo l\'utente assegnato (o un Amministratore) può modificare lo stato.');
     }
+    
+    if (newStatus === IssueStatus.ARCHIVED && modifier?.role !== 'ADMIN') {
+    throw new Error('Permesso negato: solo un Amministratore può archiviare le segnalazioni.');
+    }
 
     // 1. Array dinamico di query per la transazione
     const queries: any[] = [

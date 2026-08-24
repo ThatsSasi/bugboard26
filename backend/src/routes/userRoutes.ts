@@ -96,24 +96,7 @@ router.post('/login', validate(loginSchema), (req, res) => userController.login(
  *       200:
  *         description: Lista degli utenti recuperata con successo
  */
-router.get('/', async (req, res) => {
-  try {
-    // Recuperiamo tutti gli utenti dal database con Prisma
-    // (potresti voler escludere le password per sicurezza!)
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        fullName: true,  // <-- Aggiunto per includere il nome completo
-        avatarUrl: true  // <-- Aggiunto per includere l'URL dell'avatar
-      }
-    });
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: "Errore nel recupero degli utenti" });
-  }
-});
+router.get('/', authenticateToken, (req, res) => userController.getAll(req, res));
 /**
  * @swagger
  * /api/users/me:

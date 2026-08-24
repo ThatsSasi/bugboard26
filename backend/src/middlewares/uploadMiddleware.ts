@@ -19,5 +19,5 @@ const storage = multer.diskStorage({
 // 3. Aggiungiamo un limite di 5MB (Risolve il Denial of Service)
 export const upload = multer({ 
     storage,
-    limits: { fileSize: 5 * 1024 * 1024 } // 5 MB in byte
+    limits: { fileSize: 10 * 1024 * 1024 } // 10 MB in byte
 });

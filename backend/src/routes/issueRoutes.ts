@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { IssueController } from '../controllers/issueController';
-import { authenticateToken } from '../middlewares/authMiddleware';
+import { authenticateToken, isAdmin } from '../middlewares/authMiddleware';
 import { validate } from '../middlewares/validateMiddleware';
 import { createIssueSchema, updateStatusSchema } from '../schemas/issueSchema';
 import { upload } from '../middlewares/uploadMiddleware';
@@ -15,14 +15,14 @@ const issueController = new IssueController();
  * @swagger
  * /api/issues:
  *   post:
- *     summary: Crea una nuova Issue
+ *     summary: Crea una nuova Issue (con allegato opzionale)
  *     tags: [Issues]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
@@ -43,6 +43,10 @@ const issueController = new IssueController();
  *                 type: string
  *                 enum: [LOW, MEDIUM, HIGH]
  *                 description: "Priorità della segnalazione (opzionale)"
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: "Immagine allegata (opzionale)"
  *     responses:
  *       201:
  *         description: Segnalazione creata con successo
@@ -158,7 +162,7 @@ router.patch('/:id/status', authenticateToken, validate(updateStatusSchema), (re
  *       200:
  *         description: Segnalazione assegnata con successo
  */
-router.patch('/:id/assign', authenticateToken, (req, res) => issueController.assignUser(req as any, res));
+router.patch('/:id/assign', authenticateToken, isAdmin, (req, res) => issueController.assignUser(req as any, res));
 // Archiviazione di una Issue (Soft Delete)
 /**
  * @swagger
@@ -180,7 +184,7 @@ router.patch('/:id/assign', authenticateToken, (req, res) => issueController.ass
  *       403:
  *         description: Accesso negato
  */
-router.delete('/:id', authenticateToken, (req, res) => issueController.delete(req as any, res));
+router.delete('/:id', authenticateToken, isAdmin, (req, res) => issueController.delete(req as any, res));
 // Ottenere la cronologia di una specifica Issue (GET)
 /**
  * @swagger
