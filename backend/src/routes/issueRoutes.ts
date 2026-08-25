@@ -3,7 +3,7 @@ import { IssueController } from '../controllers/issueController';
 import { authenticateToken, isAdmin } from '../middlewares/authMiddleware';
 import { validate } from '../middlewares/validateMiddleware';
 import { createIssueSchema, updateStatusSchema } from '../schemas/issueSchema';
-import { upload } from '../middlewares/uploadMiddleware';
+import { upload, formatImageUrl } from '../middlewares/uploadMiddleware';
 
 const router = Router();
 const issueController = new IssueController();
@@ -53,21 +53,7 @@ const issueController = new IssueController();
  *       400:
  *         description: Errore di validazione (Zod)
  */
-router.post(
-  '/', 
-  authenticateToken, 
-  upload.single('image'), // 1. Multer intercetta e salva il file (se c'è)
-  (req, res, next) => {
-    // 2. Se Multer ha salvato un file, costruiamo l'URL e lo mettiamo nel body
-    if (req.file) {
-      // Nota: in produzione l'host dinamico sarebbe meglio, ma per ora lo cabliamo a localhost
-      req.body.imageUrl = `http://localhost:3000/uploads/${req.file.filename}`;
-    }
-    next();
-  },
-  validate(createIssueSchema), // 3. Zod valida il body (che ora contiene la stringa imageUrl)
-  issueController.create // 4. Il controller salva nel DB
-);
+router.post('/', authenticateToken, upload.single('image'), formatImageUrl, validate(createIssueSchema), issueController.create);
 // Ottenere la lista di tutte le Issue (sempre protetta dal token!)
 /**
  * @swagger
