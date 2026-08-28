@@ -26,7 +26,7 @@ export const Login = () => {
   };
 
   return (
-    <div style={{ backgroundColor: UI_COLORS.background, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
+    <div style={{ backgroundColor: UI_COLORS.background, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--sans)' }}>
       
       {/* LOGO DELL'APP */}
       <div style={{ marginBottom: '35px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

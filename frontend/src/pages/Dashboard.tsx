@@ -57,12 +57,12 @@ export const Dashboard = () => {
     fetchMetrics();
   }, [navigate, selectedMonth]);
 
-  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'sans-serif', color: UI_COLORS.textPrimary }}>Caricamento Report...</div>;
+  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'var(--sans)', color: UI_COLORS.textPrimary }}>Caricamento Report...</div>;
   if (error) return <div style={{ textAlign: 'center', marginTop: '50px', color: UI_COLORS.badgeHighText, fontWeight: 'bold', padding: '20px' }}>{error}</div>;
   if (!metrics) return null;
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif', minHeight: '100vh', boxSizing: 'border-box', backgroundColor: UI_COLORS.background, color: UI_COLORS.textPrimary }}>
+    <div style={{ padding: '20px', fontFamily: 'var(--sans)', minHeight: '100vh', boxSizing: 'border-box', backgroundColor: UI_COLORS.background, color: UI_COLORS.textPrimary }}>
       {/* STILI GLOBALI (Solo Scrollbar) */}
       <style>
         {`

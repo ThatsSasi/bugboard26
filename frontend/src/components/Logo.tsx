@@ -49,7 +49,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 32, showText = true }) => {
           fontSize: size * 0.75, // Il testo scala automaticamente in base alla dimensione dell'icona
           fontWeight: 800, 
           color: textColor, 
-          fontFamily: 'sans-serif', 
+          fontFamily: 'var(--sans)', 
           letterSpacing: '-0.5px',
           lineHeight: 1
         }}>

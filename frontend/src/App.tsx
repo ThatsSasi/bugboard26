@@ -1,15 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './pages/Login';
 import { Board } from './pages/Board';
-import { Dashboard } from './pages/Dashboard'; // <-- 1. IMPORTA LA DASHBOARD
-
-// Un componente segnaposto temporaneo per la nostra Board
-const BoardPlaceholder = () => (
-  <div style={{ padding: '2rem', textAlign: 'center' }}>
-    <h1>🚀 BugBoard26</h1>
-    <p>Se vedi questa pagina, il login ha funzionato!</p>
-  </div>
-);
+import { Dashboard } from './pages/Dashboard';
 
 function App() {
   return (

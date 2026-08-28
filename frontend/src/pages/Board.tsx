@@ -22,11 +22,11 @@ export const Board = () => {
     handleCreateIssue, handleStatusChange, handleAssignUser, handleAddTag, handleRemoveTag, handleUpdateProfile, handleLogout
   } = useBoardData();
 
-  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'sans-serif', color: UI_COLORS.textPrimary }}>Caricamento...</div>;
+  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'var(--sans)', color: UI_COLORS.textPrimary }}>Caricamento...</div>;
 
   // 2. Renderizziamo solo interfacce pulite!
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif', color: UI_COLORS.textPrimary, backgroundColor: UI_COLORS.surface }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'var(--sans)', color: UI_COLORS.textPrimary, backgroundColor: UI_COLORS.surface }}>
       <style>
         {`
           body { margin: 0; padding: 0; overflow: hidden; }

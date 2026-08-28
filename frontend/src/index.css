@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
 :root {
   /* --- PALETTE CHIARA (Stile Jira concordata) --- */
   --text: #5E6C84;          /* textMuted */
@@ -12,8 +14,8 @@
   --social-bg: #FFFFFF;
   --shadow: 0 1px 3px rgba(0,0,0,0.05);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: 'DM Sans', sans-serif;
+  --heading: 'DM Sans', sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
