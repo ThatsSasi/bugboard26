@@ -15,7 +15,7 @@ Il sistema adotta un'architettura Client-Server distribuita, esponendo API RESTf
 
 ### Front-end (Client SPA)
 * **Framework:** React con TypeScript (Vite)
-* **Styling:** CSS Nativo (Custom Properties, Design System \textit{Jira-style})
+* **Styling:** CSS Nativo (Custom Properties, Design System)
 * **Networking:** Axios con Request Interceptors per iniezione JWT
 * **Gestione Stato & Dati:** Custom Hooks
 
