@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { UserController } from '../controllers/userController';
 import { validate } from '../middlewares/validateMiddleware';
 import { registerSchema, loginSchema } from '../schemas/userSchema';
-import { prisma } from '..';
 import { upload } from '../middlewares/uploadMiddleware';
 import { authenticateToken, isAdmin } from '../middlewares/authMiddleware';
 
