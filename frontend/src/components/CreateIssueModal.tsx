@@ -7,7 +7,6 @@ interface CreateIssueModalProps {
 }
 
 export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ onClose, onCreate }) => {
-  // Spostiamo qui gli stati locali che prima intasavano la Board!
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newType, setNewType] = useState('BUG'); 

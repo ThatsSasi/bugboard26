@@ -8,9 +8,6 @@ import { upload, formatImageUrl } from '../middlewares/uploadMiddleware';
 const router = Router();
 const issueController = new IssueController();
 
-// Definiamo l'endpoint per la creazione. 
-// NOTA BENE: Inseriamo authenticateToken come secondo parametro! 
-// Express eseguirà prima il middleware, e solo se ha successo chiamerà il controller.
 /**
  * @swagger
  * /api/issues:
@@ -54,7 +51,6 @@ const issueController = new IssueController();
  *         description: Errore di validazione (Zod)
  */
 router.post('/', authenticateToken, upload.single('image'), formatImageUrl, validate(createIssueSchema), issueController.create);
-// Ottenere la lista di tutte le Issue (sempre protetta dal token!)
 /**
  * @swagger
  * /api/issues:
@@ -83,7 +79,6 @@ router.post('/', authenticateToken, upload.single('image'), formatImageUrl, vali
  *         description: Errore del server
  */
 router.get('/', authenticateToken, (req, res) => issueController.getAll(req as any, res));
-// Modificare lo stato di una singola Issue (PATCH)
 /**
  * @swagger
  * /api/issues/{id}/status:
@@ -118,7 +113,6 @@ router.get('/', authenticateToken, (req, res) => issueController.getAll(req as a
  *         description: Dati non validi
  */
 router.patch('/:id/status', authenticateToken, validate(updateStatusSchema), (req, res) => issueController.updateStatus(req as any, res));
-// Assegnare una Issue a un utente specifico (PATCH)
 /**
  * @swagger
  * /api/issues/{id}/assign:
@@ -149,7 +143,6 @@ router.patch('/:id/status', authenticateToken, validate(updateStatusSchema), (re
  *         description: Segnalazione assegnata con successo
  */
 router.patch('/:id/assign', authenticateToken, isAdmin, (req, res) => issueController.assignUser(req as any, res));
-// Archiviazione di una Issue (Soft Delete)
 /**
  * @swagger
  * /api/issues/{id}:
@@ -171,7 +164,6 @@ router.patch('/:id/assign', authenticateToken, isAdmin, (req, res) => issueContr
  *         description: Accesso negato
  */
 router.delete('/:id', authenticateToken, isAdmin, (req, res) => issueController.delete(req as any, res));
-// Ottenere la cronologia di una specifica Issue (GET)
 /**
  * @swagger
  * /api/issues/{id}/history:
@@ -191,7 +183,6 @@ router.delete('/:id', authenticateToken, isAdmin, (req, res) => issueController.
  *         description: Lista dei log storici recuperata
  */
 router.get('/:id/history', authenticateToken, (req, res) => issueController.getHistory(req as any, res));
-// Gestione dei Tag
 /**
  * @swagger
  * /api/issues/{id}/tags:

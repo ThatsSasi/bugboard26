@@ -5,7 +5,6 @@ import { authenticateToken, isAdmin } from '../middlewares/authMiddleware';
 const router = Router();
 const reportController = new ReportController();
 
-// GET /api/reports/metrics
 /**
  * @swagger
  * /api/reports/metrics:

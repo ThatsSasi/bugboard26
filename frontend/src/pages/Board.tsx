@@ -1,7 +1,6 @@
 import { UI_COLORS } from '../styles/theme';
 import { useBoardData } from '../hooks/useBoardData';
 
-// Componenti UI Astratti
 import { TopNav } from '../components/TopNav';
 import { Sidebar } from '../components/Sidebar';
 import { IssueTable } from '../components/IssueTable';
@@ -11,7 +10,6 @@ import { EditProfileModal } from '../components/EditProfileModal';
 import { CreateAdminUserModal } from '../components/CreateAdminUserModal';
 
 export const Board = () => {
-  // 1. Chiamiamo il nostro Custom Hook che ci fornisce solo i dati e le azioni!
   const {
     loading, error, paginatedIssues, totalPages, currentPage, setCurrentPage,
     tempSearch, setTempSearch, tempTagSearch, setTempTagSearch, tempStatus, setTempStatus, tempType, setTempType, tempSort, setTempSort,
@@ -24,7 +22,6 @@ export const Board = () => {
 
   if (loading) return <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'var(--sans)', color: UI_COLORS.textPrimary }}>Caricamento...</div>;
 
-  // 2. Renderizziamo solo interfacce pulite!
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'var(--sans)', color: UI_COLORS.textPrimary, backgroundColor: UI_COLORS.surface }}>
       <style>

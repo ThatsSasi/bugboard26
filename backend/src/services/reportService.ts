@@ -3,7 +3,6 @@ import { prisma } from '..';
 export class ReportService {
   
   async getDashboardMetrics(queryMonth?: string, queryYear?: string) {
-    // --- 1. LETTURA PARAMETRI E RANGE TEMPORALE ---
     const now = new Date();
     let targetMonth = now.getMonth(); 
     let targetYear = now.getFullYear();
@@ -16,7 +15,6 @@ export class ReportService {
     const startOfMonth = new Date(targetYear, targetMonth, 1);
     const endOfMonth = new Date(targetYear, targetMonth + 1, 1); 
 
-    // --- METRICHE AGGREGATE GLOBALI ---
     const totalOpen = await prisma.issue.count({
       where: { 
         status: { in: ['TODO', 'IN_PROGRESS'] },
@@ -27,9 +25,9 @@ export class ReportService {
     const globalResolvedIssues = await prisma.issue.findMany({
       where: { 
         status: 'RESOLVED',
-        resolvedAt: { gte: startOfMonth, lt: endOfMonth } // <-- RICERCA CORRETTA!
+        resolvedAt: { gte: startOfMonth, lt: endOfMonth }
       },
-      select: { createdAt: true, updatedAt: true, resolvedAt: true } // <-- SELECT CORRETTA!
+      select: { createdAt: true, updatedAt: true, resolvedAt: true }
     });
 
     const totalResolved = globalResolvedIssues.length;
@@ -44,7 +42,6 @@ export class ReportService {
 
     const globalAvgTime = totalResolved > 0 ? globalTotalHours / totalResolved : 0;
 
-    // --- METRICHE DETTAGLIATE PER UTENTE ---
     const users = await prisma.user.findMany({
       select: { id: true, email: true, fullName: true, avatarUrl: true }
     });
@@ -62,14 +59,14 @@ export class ReportService {
         where: { 
           assigneeId: user.id, 
           status: 'RESOLVED',
-          resolvedAt: { gte: startOfMonth, lt: endOfMonth } // <-- RICERCA CORRETTA!
+          resolvedAt: { gte: startOfMonth, lt: endOfMonth }
         },
-        select: { createdAt: true, updatedAt: true, resolvedAt: true } // <-- SELECT CORRETTA!
+        select: { createdAt: true, updatedAt: true, resolvedAt: true }
       });
 
       let userHours = 0;
       userResolved.forEach(issue => {
-        if (issue.resolvedAt) { // <-- FORMULA CORRETTA!
+        if (issue.resolvedAt) {
           const diffMs = issue.resolvedAt.getTime() - issue.createdAt.getTime();
           userHours += diffMs / (1000 * 60 * 60);
         }
@@ -88,7 +85,6 @@ export class ReportService {
       };
     }));
 
-    // Restituiamo direttamente l'oggetto dati
     return {
       aggregate: { totalOpen, totalResolved, avgResolutionTimeHours: globalAvgTime },
       userMetrics

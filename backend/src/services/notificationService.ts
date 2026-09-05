@@ -1,4 +1,4 @@
-import { prisma } from '../index'; // Assicurati che il path sia corretto
+import { prisma } from '../index';
 
 export class NotificationService {
     
@@ -24,7 +24,6 @@ export class NotificationService {
             }
         });
 
-        // Se non viene modificata nessuna riga, lanciamo un errore specifico
         if (result.count === 0) {
             throw new Error('NOT_FOUND');
         }

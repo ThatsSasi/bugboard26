@@ -1,16 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  /* --- PALETTE CHIARA (Stile Jira concordata) --- */
-  --text: #5E6C84;          /* textMuted */
-  --text-h: #172B4D;        /* textPrimary */
-  --bg: #F4F5F7;            /* background generale */
-  --surface: #FFFFFF;       /* sfondi card/modali */
-  --border: #DFE1E6;        /* border leggero */
-  --code-bg: #EBECF0;       /* buttonSecondary come sfondo neutro */
-  --accent: #0052CC;        /* primary */
-  --accent-bg: #DEEBFF;     /* badgeTypeBg (sfondo primario chiaro) */
-  --accent-border: #0047B3; /* primaryHover */
+  --text: #5E6C84;
+  --text-h: #172B4D;
+  --bg: #F4F5F7;
+  --surface: #FFFFFF;
+  --border: #DFE1E6;
+  --code-bg: #EBECF0;
+  --accent: #0052CC;
+  --accent-bg: #DEEBFF;
+  --accent-border: #0047B3;
   --social-bg: #FFFFFF;
   --shadow: 0 1px 3px rgba(0,0,0,0.05);
 
@@ -22,7 +21,6 @@
   letter-spacing: 0.18px;
   color-scheme: light dark;
   
-  /* Applichiamo il textPrimary come colore base di lettura */
   color: var(--text-h);
   background: var(--bg);
   
@@ -37,10 +35,10 @@
 }
 
 #root {
-  width: 100%;             /* Sfrutta tutta la larghezza */
-  max-width: none;         /* Rimuove i limiti */
-  margin: 0;               /* Rimuove i margini automatici */
-  text-align: left;        /* Allinea il testo a sinistra in stile Jira */
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  text-align: left;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -98,16 +96,12 @@ code {
   background: var(--code-bg);
 }
 
-/* --- FIX AUTOFILL DEL BROWSER --- */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
-    /* Usiamo un'ombra interna gigante per coprire lo sfondo del browser col nostro colore di superficie */
     -webkit-box-shadow: 0 0 0 1000px var(--surface) inset !important;
-    /* Forziamo il colore del testo a rimanere quello del nostro tema */
     -webkit-text-fill-color: var(--text-h) !important;
     caret-color: var(--text-h) !important;
-    /* Preveniamo transizioni indesiderate */
     transition: background-color 5000s ease-in-out 0s;
 }

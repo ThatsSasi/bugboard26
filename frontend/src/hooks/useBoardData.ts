@@ -9,7 +9,6 @@ import type { Issue, HistoryLog, User, AppNotification } from '../types';
 export const useBoardData = () => {
   const navigate = useNavigate();
 
-  // --- STATI ---
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,7 +44,6 @@ export const useBoardData = () => {
   const [activeSidebarFilter, setActiveSidebarFilter] = useState<'ALL' | 'MY_OPEN' | 'DONE' | 'ARCHIVED'>('ALL');
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
-  // --- EFFETTI (Caricamento Iniziale) ---
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -102,28 +100,22 @@ export const useBoardData = () => {
     }
   }, [selectedIssue?.id]);
 
-  // --- POLLING DELLE NOTIFICHE (Dati "Live") ---
   useEffect(() => {
-    // Se non abbiamo ancora caricato l'ID utente, ci fermiamo
     if (!loggedUserId) return;
 
-    // Impostiamo un timer che scatta ogni 10 secondi (10000 millisecondi)
     const intervalId = setInterval(async () => {
       try {
         const notifData = await notificationService.getNotifications();
         
-        // Aggiorniamo lo stato solo se ci sono cambiamenti (React gestirà il re-render)
         setNotifications(notifData);
       } catch (error) {
         console.error("Errore nel recupero in background delle notifiche:", error);
       }
     }, 10000); 
 
-    // Cleanup: spegniamo il timer quando l'utente cambia pagina o fa logout
     return () => clearInterval(intervalId);
   }, [loggedUserId]);
 
-  // --- AZIONI E FUNZIONI ---
   const handleLogout = () => {
     authService.logout();
     navigate('/login');

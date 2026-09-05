@@ -6,7 +6,6 @@ const notificationService = new NotificationService();
 
 export class NotificationController {
     
-    // Recupera tutte le notifiche dell'utente loggato
     async getUserNotifications(req: AuthRequest, res: Response): Promise<void> {
         try {
             const userId = req.user?.userId;
@@ -16,7 +15,6 @@ export class NotificationController {
                 return;
             }
 
-            // Deleghiamo la query al Service
             const notifications = await notificationService.getUserNotifications(userId);
 
             res.status(200).json(notifications);
@@ -26,7 +24,6 @@ export class NotificationController {
         }
     }
 
-    // Segna una specifica notifica come letta
     async markAsRead(req: AuthRequest, res: Response): Promise<void> {
         try {
             const notifId = parseInt(req.params.id as string, 10);
@@ -42,14 +39,12 @@ export class NotificationController {
                 return;
             }
 
-            // Deleghiamo l'aggiornamento al Service
             await notificationService.markAsRead(notifId, userId);
 
             res.status(200).json({ message: 'Notifica segnata come letta.' });
         } catch (error: any) {
             console.error(error);
             
-            // Gestiamo l'errore specifico lanciato dal Service
             if (error.message === 'NOT_FOUND') {
                 res.status(404).json({ error: 'Notifica non trovata o già aggiornata.' });
             } else {

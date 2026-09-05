@@ -8,8 +8,6 @@ import { authenticateToken, isAdmin } from '../middlewares/authMiddleware';
 const router = Router();
 const userController = new UserController();
 
-// Definiamo l'endpoint per la registrazione.
-// Usiamo un'arrow function per mantenere il corretto contesto di "this" all'interno della classe Controller.
 /**
  * @swagger
  * /api/users/register:
@@ -51,7 +49,6 @@ const userController = new UserController();
  *         description: Accesso negato (non sei un Amministratore)
  */
 router.post('/register', authenticateToken, isAdmin, validate(registerSchema), (req, res) => userController.register(req, res));
-// Definiamo l'endpoint per il login
 /**
  * @swagger
  * /api/users/login:
@@ -82,7 +79,6 @@ router.post('/register', authenticateToken, isAdmin, validate(registerSchema), (
  *         description: Credenziali non valide
  */
 router.post('/login', validate(loginSchema), (req, res) => userController.login(req, res));
-// Esempio nel tuo router Express (es. routes/userRoutes.ts)
 /**
  * @swagger
  * /api/users:

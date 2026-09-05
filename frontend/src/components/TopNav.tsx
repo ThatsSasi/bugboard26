@@ -21,13 +21,11 @@ export const TopNav: React.FC<TopNavProps> = ({
 }) => {
   const navigate = useNavigate();
   
-  // Spostiamo qui gli stati e le ref delle tendine!
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Spostiamo qui il listener per i click esterni!
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {

@@ -9,7 +9,6 @@ export const Dashboard = () => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  // NUOVO: Stato per il selettore del mese (inizializzato al mese corrente)
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -17,7 +16,6 @@ export const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 1. Controllo Proattivo dei Permessi lato Frontend
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
@@ -27,7 +25,6 @@ export const Dashboard = () => {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       if (payload.role !== 'ADMIN') {
-        // Se è un utente normale, lo rimandiamo alla Board senza disconnetterlo
         navigate('/');
         return;
       }
@@ -37,10 +34,9 @@ export const Dashboard = () => {
       return;
     }
 
-    // 2. Recupero delle metriche (avviene solo se si è superato il blocco sopra)
     const fetchMetrics = async () => {
       try {
-        const [year, month] = selectedMonth.split('-'); // Estraiamo YYYY e MM stringa
+        const [year, month] = selectedMonth.split('-');
         const data = await reportService.getDashboardMetrics(Number(month), Number(year));
         setMetrics(data);
       } catch (err: any) {
@@ -96,7 +92,7 @@ export const Dashboard = () => {
               <p style={{ margin: '5px 0 0 0', color: UI_COLORS.textMuted, fontSize: '14px' }}>Dashboard riservata agli Amministratori</p>
             </div>
             
-            {/* NUOVO: Selettori espliciti per Mese e Anno */}
+            {/* Selettori per Mese e Anno */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <span style={{ fontSize: '12px', color: UI_COLORS.textMuted, fontWeight: 'bold', marginRight: '5px' }}>📅 PERIODO:</span>
               
@@ -190,7 +186,6 @@ export const Dashboard = () => {
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   <td style={{ padding: '15px', color: UI_COLORS.textPrimary, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {/* AVATAR: Se c'è l'immagine la mostra, altrimenti mostra l'iniziale del nome (o email se manca) */}
                     {user.avatarUrl ? (
                       <img src={user.avatarUrl} alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', border: `1px solid ${UI_COLORS.border}` }} />
                     ) : (
@@ -199,7 +194,6 @@ export const Dashboard = () => {
                       </div>
                     )}
                     
-                    {/* NOME ED EMAIL: Mostra il nome in grassetto e l'email piccola sotto (se il nome è disponibile) */}
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontWeight: '500', fontSize: '14px' }}>
                         {user.fullName || user.email.split('@')[0]}

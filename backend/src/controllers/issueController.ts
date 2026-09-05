@@ -113,7 +113,6 @@ export class IssueController {
                 return;
             }
 
-            // NUOVO CONTROLLO: Permettiamo che sia un numero oppure esplicitamente null
             if (assigneeId !== null && typeof assigneeId !== 'number') {
                 res.status(400).json({ error: 'ID utente assegnatario mancante o non valido.' });
                 return;
@@ -179,7 +178,7 @@ export class IssueController {
         try {
             const issueId = parseInt(req.params.id as string, 10);
             const { name } = req.body; 
-            const modifierId = req.user?.userId; // <-- Aggiunto
+            const modifierId = req.user?.userId;
 
             if (!modifierId) {
                 res.status(401).json({ error: 'Accesso negato.' });
@@ -191,7 +190,7 @@ export class IssueController {
                 return;
             }
 
-            const updatedIssue = await issueService.addTag(issueId, name, modifierId); // <-- Passato al service
+            const updatedIssue = await issueService.addTag(issueId, name, modifierId);
             res.status(200).json(updatedIssue);
         } catch (error: any) {
             res.status(400).json({ error: error.message || 'Errore durante l\'aggiunta del tag.' });
@@ -202,7 +201,7 @@ export class IssueController {
         try {
             const issueId = parseInt(req.params.id as string, 10);
             const tagId = parseInt(req.params.tagId as string, 10);
-            const modifierId = req.user?.userId; // <-- Aggiunto
+            const modifierId = req.user?.userId;
 
             if (!modifierId) {
                 res.status(401).json({ error: 'Accesso negato.' });
@@ -214,7 +213,7 @@ export class IssueController {
                 return;
             }
 
-            const updatedIssue = await issueService.removeTag(issueId, tagId, modifierId); // <-- Passato al service
+            const updatedIssue = await issueService.removeTag(issueId, tagId, modifierId);
             res.status(200).json(updatedIssue);
         } catch (error: any) {
             res.status(400).json({ error: error.message || 'Errore durante la rimozione del tag.' });

@@ -5,7 +5,6 @@ import { authenticateToken } from '../middlewares/authMiddleware';
 const router = Router();
 const notificationController = new NotificationController();
 
-// Recupera le notifiche dell'utente
 /**
  * @swagger
  * /api/notifications:
@@ -20,7 +19,6 @@ const notificationController = new NotificationController();
  */
 router.get('/', authenticateToken, (req, res) => notificationController.getUserNotifications(req as any, res));
 
-// Segna la notifica come letta (PATCH)
 /**
  * @swagger
  * /api/notifications/{id}/read:

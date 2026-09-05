@@ -20,13 +20,12 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   issue, onClose, users, loggedUserId, loggedUserRole, history, loadingHistory,
   onStatusChange, onAssignUser, onAddTag, onRemoveTag
 }) => {
-  // Spostiamo qui lo stato dell'input del tag!
   const [newTagInput, setNewTagInput] = useState('');
 
   const handleAddTagClick = async () => {
     if (!newTagInput.trim()) return;
     await onAddTag(newTagInput);
-    setNewTagInput(''); // Svuota l'input dopo il salvataggio
+    setNewTagInput('');
   };
 
   return (

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 
-// Definiamo le props in TypeScript per massima rigidità
 interface DroppableColumnProps {
   id: string;
   title: string;

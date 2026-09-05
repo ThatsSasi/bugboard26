@@ -80,7 +80,6 @@ describe('IssueService - assignUser', () => {
   // TEST 5: Percorso di Successo (Happy Path)
   it('Dovrebbe assegnare la issue e lanciare la transazione', async () => {
     (prisma.issue.findUnique as jest.Mock).mockResolvedValue({ id: 1, status: 'TODO' });
-    // Il servizio reale cerca SOLO il modificatore nel DB, quindi 1 sola chiamata
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 1, role: 'ADMIN' });
       
     const mockUpdatedIssue = { id: 1, assigneeId: 2 };
@@ -121,7 +120,6 @@ describe('IssueService - addTag', () => {
     
     const mockIssueWithTag = { id: 1, tags: [{ name: 'frontend' }] };
     
-    // Il servizio reale non usa la transazione qui, fa un update diretto
     (prisma.issue.update as jest.Mock).mockResolvedValue(mockIssueWithTag);
 
     const result = await issueService.addTag(1, 'frontend', 1);

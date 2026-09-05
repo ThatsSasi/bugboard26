@@ -23,14 +23,11 @@ export const CreateAdminUserModal: React.FC<CreateAdminUserModalProps> = ({ onCl
       await authService.register(newAdminEmail, newAdminPassword, newAdminFullName, newAdminRole);
       setAdminFormMessage({ type: 'success', text: 'Utente creato e aggiunto al sistema!' });
       
-      // Resetta i campi
       setNewAdminFullName(''); setNewAdminEmail(''); setNewAdminPassword(''); setNewAdminRole('MEMBER');
       
-      // Comunica alla Board la nuova lista utenti
       const updatedUsers = await userService.getUsers();
       onSuccess(updatedUsers);
       
-      // Chiude il modale in automatico dopo 2 secondi
       setTimeout(() => onClose(), 2000);
     } catch (error: any) {
       setAdminFormMessage({ type: 'error', text: error.response?.data?.error || 'Errore durante la creazione.' });

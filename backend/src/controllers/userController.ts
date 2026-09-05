@@ -1,29 +1,21 @@
 import { Request, Response } from 'express';
 import { UserService } from '../services/userService';
-// NUOVI IMPORT PER IL PROFILO
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { prisma } from '..'; // Adegua il path alla tua istanza Prisma se diverso
+import { prisma } from '..';
 
-// Istanziamo il service.
 const userService = new UserService();
 
 export class UserController {
   
-  /**
-   * Gestisce la richiesta HTTP per la registrazione di un nuovo utente
-   */
   async register(req: Request, res: Response): Promise<void> {
     try {
-      // 1. Estraiamo anche il fullName
       const { email, password, fullName, role } = req.body;
 
-      // 2. Aggiungiamo fullName ai campi obbligatori
       if (!email || !password || !fullName || !role) {
         res.status(400).json({ error: 'Email, password, nome completo e ruolo sono obbligatori.' });
         return;
       }
 
-      // 3. Passiamo il fullName al service
       const newUser = await userService.createUser(email, password, fullName, role);
 
       res.status(201).json({
@@ -58,7 +50,6 @@ export class UserController {
     }
   }
 
-  // --- NUOVO METODO: AGGIORNAMENTO PROFILO ---
   async updateProfile(req: AuthRequest, res: Response): Promise<void> {
     try {
       const userId = req.user?.userId;
@@ -71,7 +62,6 @@ export class UserController {
       const { fullName } = req.body;
       let avatarUrl = undefined;
 
-      // Se c'è un file immagine, costruiamo l'URL
       if (req.file) {
         avatarUrl = `http://localhost:3000/uploads/${req.file.filename}`;
       }
